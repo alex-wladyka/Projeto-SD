@@ -1,0 +1,12 @@
+Client: {"operation":"LOGIN_CANDIDATE","data":{"email":"ab","password":"bc"}}
+Server: {"operation":"LOGIN_CANDIDATE","status":"SUCCESS","data":{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFiIiwicm9sZSI6IkNBTkRJREFURSJ9.vgjZ6txkR1B0FaaNrdTveDrwfrrrmtRmSXLKvpzcKk4"}}
+Client: {"operation":"UPDATE_ACCOUNT_CANDIDATE","data":{"email":"a","password":"b","name":"c","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFiIiwicm9sZSI6IkNBTkRJREFURSJ9.vgjZ6txkR1B0FaaNrdTveDrwfrrrmtRmSXLKvpzcKk4"}}
+Server: {"operation":"UPDATE_ACCOUNT_CANDIDATE","status":"SUCCESS","data":{"token":""}}
+Client: {"operation":"LOGIN_CANDIDATE","data":{"email":"a","password":"b"}}
+Server: {"operation":"LOGIN_CANDIDATE","status":"SUCCESS","data":{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImEiLCJyb2xlIjoiQ0FORElEQVRFIn0.VwlOTFeuID0dSSFiAoSIr5fp-3XFtKgq5lPc1m1Jblw"}}
+Client: {"operation":"UPDATE_ACCOUNT_CANDIDATE","data":{"email":"ab","password":"ac","name":"ad","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImEiLCJyb2xlIjoiQ0FORElEQVRFIn0.VwlOTFeuID0dSSFiAoSIr5fp-3XFtKgq5lPc1m1Jblw"}}
+Server: {"operation":"UPDATE_ACCOUNT_CANDIDATE","status":"SUCCESS","data":{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFiIiwicm9sZSI6IkNBTkRJREFURSJ9.vgjZ6txkR1B0FaaNrdTveDrwfrrrmtRmSXLKvpzcKk4"}}
+Client: {"operation":"UPDATE_ACCOUNT_CANDIDATE","data":{"email":"a","password":"b","name":"c","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFiIiwicm9sZSI6IkNBTkRJREFURSJ9.vgjZ6txkR1B0FaaNrdTveDrwfrrrmtRmSXLKvpzcKk4"}}
+Server: {"operation":"UPDATE_ACCOUNT_CANDIDATE","status":"SUCCESS","data":{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImEiLCJyb2xlIjoiQ0FORElEQVRFIn0.VwlOTFeuID0dSSFiAoSIr5fp-3XFtKgq5lPc1m1Jblw"}}
+Client: {"operation":"UPDATE_ACCOUNT_CANDIDATE","data":{"email":"a","password":"b","name":"c","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImEiLCJyb2xlIjoiQ0FORElEQVRFIn0.VwlOTFeuID0dSSFiAoSIr5fp-3XFtKgq5lPc1m1Jblw"}}
+Server: {"operation":"UPDATE_ACCOUNT_CANDIDATE","status":"INVALID_EMAIL","data":{"token":""}}
