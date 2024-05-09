@@ -51,8 +51,18 @@ public class Server extends Thread {
                             UpdateProcess(out, requestJson);
                             break;
                         case "DELETE_ACCOUNT_CANDIDATE":
-                            //handleDelete(requestJson, out);
+                            DeleteProcess(out, requestJson);
                             break;
+                        case "LOOKUP_ACCOUNT_CANDIDATE":
+                            LookUpProcess(out, requestJson);
+                            break;
+                        case "LOGOUT_CANDIDATE":
+                            LogoutProcess(out, requestJson);
+                            break;
+                        default:
+                            JsonObject Response = JsonUtils.createResponse(operation, "INVALID_OPERATION", "");
+                            out.println(JsonUtils.toJsonString(Response));
+                            logWriter("Server", JsonUtils.toJsonString(Response));
                     }
                 }
             }
@@ -74,23 +84,40 @@ public class Server extends Thread {
 
     private void SignUpProcess(PrintWriter out,JsonObject requestJson) throws IOException {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if ((dataJson.get("email").getAsString() == null || dataJson.get("email").getAsString().isEmpty() ) || (dataJson.get("password").getAsString() == null || dataJson.get("password").getAsString().isEmpty()) || (dataJson.get("name").getAsString() == null || dataJson.get("name").getAsString().isEmpty())) {
+            JsonObject responseJson = JsonUtils.createResponse("SIGNUP_CANDIDATE", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
         String email = dataJson.get("email").getAsString();
         String password = dataJson.get("password").getAsString();
         String name = dataJson.get("name").getAsString();
+        int id;
 
         List<Candidate> candidates = readDatabase(); //criação da lista de usuarios
 
-        for (Candidate candidate : candidates) {   //teste para ver se o email já foi cadastrado
+        if(candidates.isEmpty()) {
+            id = 1;
+        }
+        else {
+            Candidate lastCreated = candidates.get(candidates.size()-1);
+            id = Integer.parseInt(lastCreated.getId()) + 1;
+        }
+
+        for (Candidate candidate : candidates) {//teste para ver se o email já foi cadastrado
             if (candidate.getEmail().equals(email)) { //encontrou um email igual
                 JsonObject Response = JsonUtils.createResponse("SIGNUP_CANDIDATE", "USER_EXISTS", "");
 
                 out.println(JsonUtils.toJsonString(Response));
-                logWriter("Server",JsonUtils.toJsonString(Response));
+                logWriter("Server", JsonUtils.toJsonString(Response));
                 return;
             }
         }
         //email não está casdastrado
-        Candidate newUser = new Candidate(email, password, name);
+        Candidate newUser = new Candidate(String.valueOf(id),email, password, name);
         candidates.add(newUser);
         writeDatabase(candidates);
 
@@ -103,15 +130,21 @@ public class Server extends Thread {
 
     private void LoginProcess(JsonObject requestJson, PrintWriter out) throws IOException {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if ((dataJson.get("email").getAsString() == null || dataJson.get("email").getAsString().isEmpty() ) || (dataJson.get("password").getAsString() == null || dataJson.get("password").getAsString().isEmpty())) {
+            JsonObject responseJson = JsonUtils.createResponse("LOGIN_CANDIDATE", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
         String email = dataJson.get("email").getAsString();
         String password = dataJson.get("password").getAsString();
-        //int id = 0;
 
         List<Candidate> candidates = readDatabase();
         for (Candidate candidate : candidates) {
-            //id++;
             if (candidate.getEmail().equals(email) && candidate.getPassword().equals(password)) {
-                String token = JsonUtils.JWTValidator.generateToken(candidate.getEmail(), "CANDIDATE");
+                String token = JsonUtils.JWTValidator.generateToken(Integer.parseInt(candidate.getId()), "CANDIDATE");
                 JsonObject responseJson = JsonUtils.createResponse("LOGIN_CANDIDATE", "SUCCESS", token);
                 out.println(JsonUtils.toJsonString(responseJson));
                 logWriter("Server",JsonUtils.toJsonString(responseJson));
@@ -125,10 +158,18 @@ public class Server extends Thread {
 
     private void UpdateProcess(PrintWriter out, JsonObject requestJson) throws IOException {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if ((dataJson.get("email").getAsString() == null || dataJson.get("email").getAsString().isEmpty() ) || (dataJson.get("password").getAsString() == null || dataJson.get("password").getAsString().isEmpty()) || (dataJson.get("name").getAsString() == null || dataJson.get("name").getAsString().isEmpty())) {
+            JsonObject responseJson = JsonUtils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
+        String token = requestJson.get("token").getAsString();
         String email = dataJson.get("email").getAsString();
         String password = dataJson.get("password").getAsString();
         String name = dataJson.get("name").getAsString();
-        String token = dataJson.get("token").getAsString();
 
         List<Candidate> candidates = readDatabase();
 
@@ -141,10 +182,9 @@ public class Server extends Thread {
             }
         }
 
-        String candidateId = JsonUtils.JWTValidator.getIdClaim(token);
-        System.out.println(candidateId);
+        int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
 
-        Optional<Candidate> optionalCandidate = candidates.stream().filter(candidate -> candidate.getEmail().equals(candidateId)).findFirst();
+        Optional<Candidate> optionalCandidate = candidates.stream().filter(candidate -> candidate.getId().equals(String.valueOf(candidateId))).findFirst();
 
         if (optionalCandidate.isPresent()) {
             Candidate candidate = optionalCandidate.get();
@@ -155,14 +195,77 @@ public class Server extends Thread {
 
             writeDatabase(candidates);
 
-            String newToken = JsonUtils.JWTValidator.generateToken(candidate.getEmail(), "CANDIDATE");
 
-            JsonObject responseJson = JsonUtils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "SUCCESS", newToken);
+            JsonObject responseJson = JsonUtils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "SUCCESS", "");
             out.println(JsonUtils.toJsonString(responseJson));
             logWriter("Server",JsonUtils.toJsonString(responseJson));
 
 
         }
+    }
+
+    private void DeleteProcess(PrintWriter out, JsonObject requestJson) throws IOException {
+        String token = requestJson.get("token").getAsString();
+
+        int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
+        List<Candidate> candidates = readDatabase();
+
+        Optional<Candidate> optionalCandidate = candidates.stream().filter(candidate -> candidate.getId().equals(String.valueOf(candidateId))).findFirst();
+
+
+        if (optionalCandidate.isPresent()) {
+            candidates.remove(optionalCandidate.get());
+            writeDatabase(candidates);
+
+            JsonObject responseJson = JsonUtils.createResponse("DELETE_ACCOUNT_CANDIDATE", "SUCCESS", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+
+            return;
+
+        }
+    }
+
+    private void LookUpProcess(PrintWriter out, JsonObject requestJson) throws IOException {
+        String token = requestJson.get("token").getAsString();
+        int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
+
+        List<Candidate> candidates = readDatabase();
+
+        Optional<Candidate> optionalCandidate = candidates.stream().filter(candidate -> candidate.getId().equals(String.valueOf(candidateId))).findFirst();
+
+        if (optionalCandidate.isPresent()) {
+            String email = optionalCandidate.get().getEmail();
+            String password = optionalCandidate.get().getPassword();
+            String name = optionalCandidate.get().getName();
+            JsonObject data = new JsonObject();
+            data.addProperty("email",email);
+            data.addProperty("password",password);
+            data.addProperty("name",name);
+
+            JsonObject responseJson = JsonUtils.createResponse("LOOKUP_ACCOUNT_CANDIDATE", "SUCCESS", "");
+            responseJson.add("data",data);
+
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            out.println(JsonUtils.toJsonString(responseJson));
+
+
+            return;
+
+        }
+
+    }
+
+    private void LogoutProcess(PrintWriter out, JsonObject requestJson) throws IOException {
+        String token = requestJson.get("token").getAsString();
+
+        JsonObject data = new JsonObject();
+        JsonObject responseJson = JsonUtils.createResponse("LOGOUT_CANDIDATE", "SUCCESS", "");
+        responseJson.add("data",data);
+
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+        return;
     }
 
 
@@ -172,11 +275,11 @@ public class Server extends Thread {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
-                Candidate candidate = new Candidate(parts[0], parts[1], parts[2]);
+                Candidate candidate = new Candidate(parts[0], parts[1], parts[2], parts[3]);
                 candidates.add(candidate);
             }
         } catch (FileNotFoundException e) {
-            System.out.println("O arquivo não foi encontrado");
+            System.out.println("O arquivo não foi encontrado, criando um novo");
         }
         return candidates;
     }
@@ -184,7 +287,7 @@ public class Server extends Thread {
     private void writeDatabase(List<Candidate> candidates) throws IOException {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(DATABASE_FILE))) {
             for (Candidate candidate : candidates) {
-                String candidateData = candidate.getEmail() + "," + candidate.getPassword() + "," + candidate.getName();
+                String candidateData = candidate.getId() + "," + candidate.getEmail() + "," + candidate.getPassword() + "," + candidate.getName();
                 writer.write(candidateData);
                 writer.newLine();
             }
@@ -198,7 +301,7 @@ public class Server extends Thread {
         fileWriter.flush();
     }
     public static void main(String[] args) {
-        int serverPort = 21235;
+        int serverPort = 21234;
 
         try{
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter("server_log.txt", true));

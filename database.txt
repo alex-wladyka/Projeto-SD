@@ -1,12 +1,1 @@
-alex@gmail.com,alex123,alex
-alex,alw02,alexw
-a,b,c
-]terse,adwe,rert
-teste@a.com,teste,alex
-a@a.com,a,aa
-a@b.com,a,aa
-123,321,t1
-alex@lol.com,lol,alex
-lola,alo,cu
-alex@local.com,alex,alex
-cd,dc,alex
+1,alex@email.com,alex,alexwladyka

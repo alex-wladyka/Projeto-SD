@@ -13,7 +13,7 @@ public class Client {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             System.out.print("IP do Servidor: ");
-            Socket socket = new Socket(reader.readLine(),21235);
+            Socket socket = new Socket(reader.readLine(),21234);
 
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -49,17 +49,19 @@ public class Client {
                                 }
                                 switch (opt) {
                                     case 1:
-                                        token = CandidateUpdate.updateProcess(reader,out,in,token);
+                                        CandidateUpdate.updateProcess(reader,out,in,token);
                                         break;
                                     case 2:
-                                        System.out.println("Teste Buscar Conta");
+                                        CandidateLookup.LookupProcess(reader,out,in,token);
                                         break;
                                     case 3:
-                                        System.out.println("Teste Excluir Conta");
+                                        CandidateDelete.deleteProcess(reader,out,in,token);
+                                        token = null;
+                                        opt=0;
                                         break;
                                     case 0:
+                                        token = CandidateLogout.logoutProcess(out,in,token);
                                         System.out.println("Saindo");
-                                        token = null;
                                         break;
                                     default:
                                         System.out.println("Opção inválida, digite novamente.");

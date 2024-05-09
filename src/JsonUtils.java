@@ -19,6 +19,7 @@ public class JsonUtils {
         return requestJson;
     }
 
+
     public static JsonObject parseJson(String json) {
         return gson.fromJson(json, JsonObject.class);
     }
@@ -37,7 +38,9 @@ public class JsonUtils {
         responseJson.addProperty("operation", operation);
         responseJson.addProperty("status", status);
         JsonObject data = new JsonObject();
-        data.addProperty("token", token);
+        if (operation.equals("LOGIN_CANDIDATE") && status.equals("SUCCESS")) {
+            data.addProperty("token", token);
+        }
         responseJson.add("data", data);
         return responseJson;
     }
@@ -48,16 +51,16 @@ public class JsonUtils {
         private static final Algorithm algorithm = Algorithm.HMAC256(TOKEN_KEY);
         private static final JWTVerifier verifier = JWT.require(algorithm).build();
 
-        public static String generateToken(String id, String role) {
+        public static String generateToken(int id, String role) {
             return JWT.create()
                     .withClaim("id", id)
                     .withClaim("role", role)
                     .sign(algorithm);
         }
 
-        public static String getIdClaim(String token) throws JWTVerificationException {
+        public static int getIdClaim(String token) throws JWTVerificationException {
             DecodedJWT jwt = verifier.verify(token);
-            return jwt.getClaim("id").asString();
+            return jwt.getClaim("id").asInt();
         }
 
         public static String getRoleClaim(String token) throws JWTVerificationException {

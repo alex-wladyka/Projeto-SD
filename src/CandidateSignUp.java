@@ -14,6 +14,7 @@ public class CandidateSignUp {
 
         JsonObject jsonRequest = JsonUtils.createRequest("SIGNUP_CANDIDATE");
         JsonObject data = new JsonObject();
+        //data.addProperty("id",1);
         data.addProperty("email", email);
         data.addProperty("password", password);
         data.addProperty("name", name);
@@ -22,6 +23,6 @@ public class CandidateSignUp {
 
 
         String jsonResponse = JsonUtils.sendRequest(jsonRequest,out,in);
-        System.out.println(jsonResponse);
+        System.out.println("\n"+jsonResponse+"\n");
     }
 }

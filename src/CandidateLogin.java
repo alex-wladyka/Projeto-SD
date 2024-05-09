@@ -20,19 +20,20 @@ public class CandidateLogin {
         jsonRequest.add("data", data);
 
         String responseJson = JsonUtils.sendRequest(jsonRequest,out,in);
-        System.out.println(responseJson);
-        JsonObject jsonResponse = JsonUtils.parseJson(responseJson);
+        System.out.println("\n"+responseJson+"\n");
 
+        JsonObject jsonResponse = JsonUtils.parseJson(responseJson);
         String status = jsonResponse.get("status").getAsString();
 
         switch (status) {
             case "SUCCESS":
+                System.out.println("\nLogin feito com sucesso!");
                 return jsonResponse.getAsJsonObject("data").get("token").getAsString();
             case "INVALID_LOGIN":
-                System.out.println("Usuário ou senha incorretas. Tente novamente.");
+                System.out.println("\nUsuário ou senha incorretas. Tente novamente.");
                 break;
             default:
-                System.out.println("Erro ao fazer login.");
+                System.out.println("\nErro ao fazer login.");
                 break;
         }
 

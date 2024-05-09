@@ -1,16 +1,25 @@
 public class Candidate {
 
 
-    public Candidate(String email, String password, String name) {
+    public Candidate(String id,String email, String password, String name) {
+        this.id = id;
         this.email = email;
         this.password = password;
         this.name = name;
     }
 
+    private String id;
     private String email;
     private String password;
     private String name;
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getEmail() {
         return email;
