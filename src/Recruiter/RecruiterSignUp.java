@@ -26,7 +26,7 @@ public class RecruiterSignUp {
         JsonObject data = new JsonObject();
         data.addProperty("email", email);
         data.addProperty("password", password);
-        data.addProperty("name", description);
+        data.addProperty("name", name);
         data.addProperty("industry", industry);
         data.addProperty("description", description);
         jsonRequest.add("data", data);

@@ -56,7 +56,7 @@ public class Server extends Thread {
                             SignUpProcess(out, requestJson, "CANDIDATE");
                             break;
                         case "UPDATE_ACCOUNT_CANDIDATE":
-                            UpdateProcess(out, requestJson, "CANDIDATE");
+                            UpdateCandidateProcess(out, requestJson);
                             break;
                         case "DELETE_ACCOUNT_CANDIDATE":
                             DeleteProcess(out, requestJson, "CANDIDATE");
@@ -68,19 +68,19 @@ public class Server extends Thread {
                             LogoutProcess(out, requestJson, "CANDIDATE");
                             break;
                         case "LOGIN_RECRUITER":
-                            //LoginProcess(requestJson, out, "RECRUITER");
+                            LoginProcess(requestJson, out, "RECRUITER");
                             break;
                         case "SIGNUP_RECRUITER":
                             SignUpProcess(out, requestJson, "RECRUITER");
                             break;
                         case "UPDATE_ACCOUNT_RECRUITER":
-                            //UpdateProcess(out, requestJson, "RECRUITER");
+                            UpdateRecruiterProcess(out, requestJson);
                             break;
                         case "DELETE_ACCOUNT_RECRUITER":
-                            //DeleteProcess(out, requestJson, "RECRUITER");
+                            DeleteProcess(out, requestJson, "RECRUITER");
                             break;
                         case "LOOKUP_ACCOUNT_RECRUITER":
-                            //LookUpProcess(out, requestJson, "RECRUITER");
+                            LookUpProcess(out, requestJson, "RECRUITER");
                             break;
                         case "LOGOUT_RECRUITER":
                             LogoutProcess(out, requestJson, "RECRUITER");
@@ -240,10 +240,25 @@ public class Server extends Thread {
     }
 
     private void LoginProcess(JsonObject requestJson, PrintWriter out, String role) throws IOException, SQLException {
+
+        String table = "";
+        String op = "";
+
+        switch (role){
+            case "CANDIDATE":
+                op = "LOGIN_CANDIDATE";
+                table = "candidate";
+                break;
+            case "RECRUITER":
+                op = "LOGIN_RECRUITER";
+                table = "recruiter";
+                break;
+        }
+
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
 
         if ((dataJson.get("email").getAsString() == null || dataJson.get("email").getAsString().isEmpty() ) || (dataJson.get("password").getAsString() == null || dataJson.get("password").getAsString().isEmpty())) {
-            JsonObject responseJson = JsonUtils.createResponse("LOGIN_CANDIDATE", "INVALID_FIELD", "");
+            JsonObject responseJson = JsonUtils.createResponse(op, "INVALID_FIELD", "");
             out.println(JsonUtils.toJsonString(responseJson));
             logWriter("Server",JsonUtils.toJsonString(responseJson));
             return;
@@ -264,7 +279,7 @@ public class Server extends Thread {
         }*/
 
         PreparedStatement st;
-        st = Conexao.getConexao().prepareStatement("SELECT * FROM candidate WHERE Email = ? AND senha = ?");
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM "+table+" WHERE Email = ? AND senha = ?");
         st.setString(1, email);
         st.setString(2, password);
 
@@ -274,21 +289,24 @@ public class Server extends Thread {
 
         if (rs.next()) {
             int id = Integer.parseInt(rs.getString("id"));
-            String token = JsonUtils.JWTValidator.generateToken(id, "CANDIDATE");
-            JsonObject responseJson = JsonUtils.createResponse("LOGIN_CANDIDATE", "SUCCESS", token);
+            String token = JsonUtils.JWTValidator.generateToken(id, role);
+            JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", token);
+            System.out.println(JsonUtils.toJsonString(responseJson));
             out.println(JsonUtils.toJsonString(responseJson));
             logWriter("Server",JsonUtils.toJsonString(responseJson));
             return;
 
         }
 
-        JsonObject responseJson = JsonUtils.createResponse("LOGIN_CANDIDATE", "INVALID_LOGIN", "");
+        JsonObject responseJson = JsonUtils.createResponse(op, "INVALID_LOGIN", "");
         logWriter("Server",JsonUtils.toJsonString(responseJson));
         out.println(JsonUtils.toJsonString(responseJson));
     }
 
-    private void UpdateProcess(PrintWriter out, JsonObject requestJson, String role) throws IOException, SQLException {
+    private void UpdateCandidateProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+
 
         if ((dataJson.get("email").getAsString() == null || dataJson.get("email").getAsString().isEmpty() ) || (dataJson.get("password").getAsString() == null || dataJson.get("password").getAsString().isEmpty()) || (dataJson.get("name").getAsString() == null || dataJson.get("name").getAsString().isEmpty())) {
             JsonObject responseJson = JsonUtils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "INVALID_FIELD", "");
@@ -357,10 +375,79 @@ public class Server extends Thread {
 
     }
 
+    private void UpdateRecruiterProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException {
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+
+
+        if ((dataJson.get("email").getAsString() == null || dataJson.get("email").getAsString().isEmpty() ) || (dataJson.get("password").getAsString() == null || dataJson.get("password").getAsString().isEmpty()) || (dataJson.get("name").getAsString() == null || dataJson.get("name").getAsString().isEmpty()) || (dataJson.get("industry").getAsString() == null || dataJson.get("industry").getAsString().isEmpty()) || (dataJson.get("description").getAsString() == null || dataJson.get("description").getAsString().isEmpty())) {
+            JsonObject responseJson = JsonUtils.createResponse("UPDATE_ACCOUNT_RECRUITER", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
+        String token = requestJson.get("token").getAsString();
+        String email = dataJson.get("email").getAsString();
+        String password = dataJson.get("password").getAsString();
+        String name = dataJson.get("name").getAsString();
+        String industry = dataJson.get("industry").getAsString();
+        String description = dataJson.get("description").getAsString();
+
+        PreparedStatement st;
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM recruiter WHERE Email = ?");
+        st.setString(1, email);
+
+        ResultSet rs;
+        rs = st.executeQuery();
+
+        if (rs.next()) {
+            JsonObject Response = JsonUtils.createResponse("UPDATE_ACCOUNT_RECRUITER", "INVALID_EMAIL", "");
+
+            out.println(JsonUtils.toJsonString(Response));
+            logWriter("Server", JsonUtils.toJsonString(Response));
+            return;
+        }
+
+
+        int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
+
+        st = Conexao.getConexao().prepareStatement("UPDATE recruiter SET Email = ?, Nome = ?, senha = ?, industry = ?, description = ? WHERE Id = ?");
+        st.setString(1, email);
+        st.setString(2, name);
+        st.setString(3, password);
+        st.setString(4, industry);
+        st.setString(5, description);
+        st.setInt(6, recruiterId);
+        st.executeUpdate();
+
+        JsonObject responseJson = JsonUtils.createResponse("UPDATE_ACCOUNT_RECRUITER", "SUCCESS", "");
+        out.println(JsonUtils.toJsonString(responseJson));
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+
+
+
+    }
+
     private void DeleteProcess(PrintWriter out, JsonObject requestJson, String role) throws IOException, SQLException {
+
+        String table = "";
+        String op = "";
+
+        switch (role){
+            case "CANDIDATE":
+                op = "DELETE_ACCOUNT_CANDIDATE";
+                table = "candidate";
+                break;
+            case "RECRUITER":
+                op = "DELETE_ACCOUNT_RECRUITER";
+                table = "recruiter";
+                break;
+        }
+
         String token = requestJson.get("token").getAsString();
 
-        int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
+        int id = JsonUtils.JWTValidator.getIdClaim(token);
         /*List<Candidate> candidates = readDatabase();
 
         Optional<Candidate> optionalCandidate = candidates.stream().filter(candidate -> candidate.getId().equals(String.valueOf(candidateId))).findFirst();
@@ -379,18 +466,33 @@ public class Server extends Thread {
         }*/
 
         PreparedStatement st;
-        st = Conexao.getConexao().prepareStatement("DELETE FROM candidate WHERE Id = ?");
-        st.setInt(1, candidateId);
+        st = Conexao.getConexao().prepareStatement("DELETE FROM "+table+" WHERE Id = ?");
+        st.setInt(1, id);
         st.executeUpdate();
 
-        JsonObject responseJson = JsonUtils.createResponse("DELETE_ACCOUNT_CANDIDATE", "SUCCESS", "");
+        JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", "");
         out.println(JsonUtils.toJsonString(responseJson));
         logWriter("Server",JsonUtils.toJsonString(responseJson));
     }
 
     private void LookUpProcess(PrintWriter out, JsonObject requestJson, String role) throws IOException, SQLException {
+
+        String table = "";
+        String op = "";
+
+        switch (role){
+            case "CANDIDATE":
+                op = "LOOKUP_ACCOUNT_CANDIDATE";
+                table = "candidate";
+                break;
+            case "RECRUITER":
+                op = "LOOKUP_ACCOUNT_RECRUITER";
+                table = "recruiter";
+                break;
+        }
+
         String token = requestJson.get("token").getAsString();
-        int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
+        int id = JsonUtils.JWTValidator.getIdClaim(token);
 
         /*List<Candidate> candidates = readDatabase();
 
@@ -417,8 +519,8 @@ public class Server extends Thread {
         }*/
 
         PreparedStatement st;
-        st = Conexao.getConexao().prepareStatement("SELECT * FROM candidate WHERE id = ?");
-        st.setInt(1, candidateId);
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM "+table+" WHERE id = ?");
+        st.setInt(1, id);
 
         ResultSet rs;
         rs = st.executeQuery();
@@ -433,7 +535,14 @@ public class Server extends Thread {
             data.addProperty("password",password);
             data.addProperty("name",name);
 
-            JsonObject responseJson = JsonUtils.createResponse("LOOKUP_ACCOUNT_CANDIDATE", "SUCCESS", "");
+            if (role.equals("RECRUITER")){
+                String industry = rs.getString("industry");
+                String description = rs.getString("description");
+                data.addProperty("industry",industry);
+                data.addProperty("description",description);
+            }
+
+            JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", "");
             responseJson.add("data",data);
 
             logWriter("Server",JsonUtils.toJsonString(responseJson));

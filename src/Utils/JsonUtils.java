@@ -40,7 +40,7 @@ public class JsonUtils {
         responseJson.addProperty("operation", operation);
         responseJson.addProperty("status", status);
         JsonObject data = new JsonObject();
-        if (operation.equals("LOGIN_CANDIDATE") && status.equals("SUCCESS")) {
+        if (!token.isEmpty() && !token.equals("null") ){
             data.addProperty("token", token);
         }
         responseJson.add("data", data);
