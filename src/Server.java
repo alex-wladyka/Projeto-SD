@@ -228,7 +228,6 @@ public class Server extends Thread {
                 return;
             }
         }
-        //email não está casdastrado
         /*Candidate newUser = new Candidate(String.valueOf(id),email, password, name);
         candidates.add(newUser);
         writeDatabase(candidates);*/
