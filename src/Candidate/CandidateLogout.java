@@ -1,7 +1,10 @@
+package Candidate;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import Utils.JsonUtils;
 import com.google.gson.JsonObject;
 
 public class CandidateLogout {

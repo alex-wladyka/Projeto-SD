@@ -1,3 +1,6 @@
+package Candidate;
+
+import Utils.JsonUtils;
 import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;

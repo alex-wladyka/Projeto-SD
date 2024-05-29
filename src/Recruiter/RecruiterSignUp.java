@@ -1,23 +1,34 @@
+package Recruiter;
+
+import Utils.JsonUtils;
 import com.google.gson.JsonObject;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 
-public class CandidateSignUp {
+public class RecruiterSignUp {
 
     public static void SignupProcess(BufferedReader reader, PrintWriter out, BufferedReader in) throws IOException {
         System.out.print("Endereço de Email: ");
         String email = reader.readLine();
-        System.out.print("Senha:");
+        System.out.print("Senha: ");
         String password = reader.readLine();
-        System.out.print("Nome:");
+        System.out.print("Nome: ");
         String name = reader.readLine();
+        System.out.print("Industry: ");
+        String industry = reader.readLine();
+        System.out.print("Descricao: ");
+        String description = reader.readLine();
 
-        JsonObject jsonRequest = JsonUtils.createRequest("SIGNUP_CANDIDATE");
+
+        JsonObject jsonRequest = JsonUtils.createRequest("SIGNUP_RECRUITER");
         JsonObject data = new JsonObject();
-        //data.addProperty("id",1);
         data.addProperty("email", email);
         data.addProperty("password", password);
-        data.addProperty("name", name);
+        data.addProperty("name", description);
+        data.addProperty("industry", industry);
+        data.addProperty("description", description);
         jsonRequest.add("data", data);
 
 

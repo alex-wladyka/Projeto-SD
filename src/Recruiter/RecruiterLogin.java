@@ -1,9 +1,13 @@
+package Recruiter;
+
+import Utils.JsonUtils;
+import com.google.gson.JsonObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import com.google.gson.JsonObject;
 
-public class CandidateLogin {
+public class RecruiterLogin {
 
     public static String LoginProcess (BufferedReader reader, PrintWriter out, BufferedReader in ) throws IOException {
 
@@ -13,7 +17,7 @@ public class CandidateLogin {
         System.out.print("Digite a senha: ");
         String password = reader.readLine();
 
-        JsonObject jsonRequest = JsonUtils.createRequest("LOGIN_CANDIDATE");
+        JsonObject jsonRequest = JsonUtils.createRequest("LOGIN_RECRUITER");
         JsonObject data = new JsonObject();
         data.addProperty("email", email);
         data.addProperty("password", password);
