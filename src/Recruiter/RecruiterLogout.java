@@ -22,8 +22,9 @@ public class RecruiterLogout {
 
         JsonUtils.sendRequest(jsonRequest, out, in);
 
+        System.out.println("Client:"+jsonRequest.toString());
         String jsonResponse = JsonUtils.sendRequest(jsonRequest,out,in);
-        System.out.println(jsonResponse);
+        System.out.println("Server: "+jsonResponse);
 
         return null;
     }

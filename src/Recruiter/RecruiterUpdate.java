@@ -43,9 +43,9 @@ public class RecruiterUpdate {
         jsonRequest.add("data", data);
 
 
-
+        System.out.println("Client:"+jsonRequest.toString());
         String jsonResponse = JsonUtils.sendRequest(jsonRequest, out, in);
-        System.out.println("\n"+jsonResponse+"\n");
+        System.out.println("Server: "+jsonResponse);
 
         JsonObject responseJson = JsonUtils.parseJson(jsonResponse);
         String status = responseJson.get("status").getAsString();

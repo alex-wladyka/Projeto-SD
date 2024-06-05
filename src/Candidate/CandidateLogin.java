@@ -23,8 +23,9 @@ public class CandidateLogin {
         data.addProperty("password", password);
         jsonRequest.add("data", data);
 
+        System.out.println("Client:"+jsonRequest);
         String responseJson = JsonUtils.sendRequest(jsonRequest,out,in);
-        System.out.println("\n"+responseJson+"\n");
+        System.out.println("Server: "+responseJson);
 
         JsonObject jsonResponse = JsonUtils.parseJson(responseJson);
         String status = jsonResponse.get("status").getAsString();

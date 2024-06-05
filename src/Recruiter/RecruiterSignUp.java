@@ -32,8 +32,8 @@ public class RecruiterSignUp {
         jsonRequest.add("data", data);
 
 
-
+        System.out.println("Client:"+jsonRequest);
         String jsonResponse = JsonUtils.sendRequest(jsonRequest,out,in);
-        System.out.println("\n"+jsonResponse+"\n");
+        System.out.println("Server: "+jsonResponse);
     }
 }

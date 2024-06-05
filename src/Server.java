@@ -267,17 +267,6 @@ public class Server extends Thread {
         String email = dataJson.get("email").getAsString();
         String password = dataJson.get("password").getAsString();
 
-        /*List<Candidate> candidates = readDatabase();
-        for (Candidate candidate : candidates) {
-            if (candidate.getEmail().equals(email) && candidate.getPassword().equals(password)) {
-                String token = JsonUtils.JWTValidator.generateToken(Integer.parseInt(candidate.getId()), "CANDIDATE");
-                JsonObject responseJson = JsonUtils.createResponse("LOGIN_CANDIDATE", "SUCCESS", token);
-                out.println(JsonUtils.toJsonString(responseJson));
-                logWriter("Server",JsonUtils.toJsonString(responseJson));
-                return;
-            }
-        }*/
-
         PreparedStatement st;
         st = Conexao.getConexao().prepareStatement("SELECT * FROM "+table+" WHERE Email = ? AND senha = ?");
         st.setString(1, email);
@@ -335,30 +324,9 @@ public class Server extends Thread {
             return;
         }
 
-        /*List<Candidate> candidates = readDatabase();
-
-        for (Candidate candidate : candidates) {   //teste para ver se o email já foi cadastrado
-            if (candidate.getEmail().equals(email)) { //encontrou um email igual
-                JsonObject invalidResponse = JsonUtils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "INVALID_EMAIL", "");
-                logWriter("Server",JsonUtils.toJsonString(invalidResponse));
-                out.println(invalidResponse);
-                return;
-            }
-        }*/
 
         int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
 
-        /*Optional<Candidate> optionalCandidate = candidates.stream().filter(candidate -> candidate.getId().equals(String.valueOf(candidateId))).findFirst();
-
-        if (optionalCandidate.isPresent()) {
-            Candidate candidate = optionalCandidate.get();
-
-            candidate.setEmail(email);
-            candidate.setPassword(password);
-            candidate.setName(name);
-
-            writeDatabase(candidates);
-        }*/
 
             st = Conexao.getConexao().prepareStatement("UPDATE candidate SET Email = ?, Nome = ?, senha = ? WHERE Id = ?");
             st.setString(1, email);
@@ -448,22 +416,6 @@ public class Server extends Thread {
         String token = requestJson.get("token").getAsString();
 
         int id = JsonUtils.JWTValidator.getIdClaim(token);
-        /*List<Candidate> candidates = readDatabase();
-
-        Optional<Candidate> optionalCandidate = candidates.stream().filter(candidate -> candidate.getId().equals(String.valueOf(candidateId))).findFirst();
-
-
-        if (optionalCandidate.isPresent()) {
-            candidates.remove(optionalCandidate.get());
-            writeDatabase(candidates);
-
-            JsonObject responseJson = JsonUtils.createResponse("DELETE_ACCOUNT_CANDIDATE", "SUCCESS", "");
-            out.println(JsonUtils.toJsonString(responseJson));
-            logWriter("Server",JsonUtils.toJsonString(responseJson));
-
-            return;
-
-        }*/
 
         PreparedStatement st;
         st = Conexao.getConexao().prepareStatement("DELETE FROM "+table+" WHERE Id = ?");
@@ -493,30 +445,6 @@ public class Server extends Thread {
 
         String token = requestJson.get("token").getAsString();
         int id = JsonUtils.JWTValidator.getIdClaim(token);
-
-        /*List<Candidate> candidates = readDatabase();
-
-        Optional<Candidate> optionalCandidate = candidates.stream().filter(candidate -> candidate.getId().equals(String.valueOf(candidateId))).findFirst();
-
-        if (optionalCandidate.isPresent()) {
-            String email = optionalCandidate.get().getEmail();
-            String password = optionalCandidate.get().getPassword();
-            String name = optionalCandidate.get().getName();
-            JsonObject data = new JsonObject();
-            data.addProperty("email",email);
-            data.addProperty("password",password);
-            data.addProperty("name",name);
-
-            JsonObject responseJson = JsonUtils.createResponse("LOOKUP_ACCOUNT_CANDIDATE", "SUCCESS", "");
-            responseJson.add("data",data);
-
-            logWriter("Server",JsonUtils.toJsonString(responseJson));
-            out.println(JsonUtils.toJsonString(responseJson));
-
-
-            return;
-
-        }*/
 
         PreparedStatement st;
         st = Conexao.getConexao().prepareStatement("SELECT * FROM "+table+" WHERE id = ?");
@@ -578,37 +506,14 @@ public class Server extends Thread {
     }
 
 
-    /*private List<Candidate> readDatabase() throws IOException {  //método utilizado para gerar uma arrayList com os dados presentes no arquivo da base de dados
-        List<Candidate> candidates = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(DATABASE_FILE))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                Candidate candidate = new Candidate(parts[0], parts[1], parts[2], parts[3]);
-                candidates.add(candidate);
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("O arquivo não foi encontrado, criando um novo");
-        }
-        return candidates;
-    }*/
-
-    /*private void writeDatabase(List<Candidate> candidates) throws IOException {
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(DATABASE_FILE))) {
-            for (Candidate candidate : candidates) {
-                String candidateData = candidate.getId() + "," + candidate.getEmail() + "," + candidate.getPassword() + "," + candidate.getName();
-                writer.write(candidateData);
-                writer.newLine();
-            }
-        }
-    }*/
-
     private void logWriter(String menssager, String message) throws IOException
     {
         fileWriter.write(menssager + ": " + message);
         fileWriter.newLine();
         fileWriter.flush();
     }
+
+
     public static void main(String[] args) {
         int serverPort = 21234;
 

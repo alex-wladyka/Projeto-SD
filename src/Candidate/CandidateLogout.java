@@ -20,10 +20,10 @@ public class CandidateLogout {
         JsonObject data = new JsonObject();
         jsonRequest.add("data", data);
 
-        JsonUtils.sendRequest(jsonRequest, out, in);
 
+        System.out.println("Client:"+jsonRequest);
         String jsonResponse = JsonUtils.sendRequest(jsonRequest,out,in);
-        System.out.println(jsonResponse);
+        System.out.println("Server: "+jsonResponse);
 
         return null;
     }

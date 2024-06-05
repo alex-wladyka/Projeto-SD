@@ -20,8 +20,9 @@ public class CandidateDelete {
         JsonObject dataJson = new JsonObject();
         requestJson.add("data", dataJson);
 
+        System.out.println("Client:"+requestJson.toString());
         String responseJson = JsonUtils.sendRequest(requestJson,out,in);
-        System.out.println("\n"+responseJson+"\n");
+        System.out.println("Server: "+responseJson);
     }
 
 }
