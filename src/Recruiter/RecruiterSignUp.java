@@ -9,17 +9,8 @@ import java.io.PrintWriter;
 
 public class RecruiterSignUp {
 
-    public static void SignupProcess(BufferedReader reader, PrintWriter out, BufferedReader in) throws IOException {
-        System.out.print("Endereço de Email: ");
-        String email = reader.readLine();
-        System.out.print("Senha: ");
-        String password = reader.readLine();
-        System.out.print("Nome: ");
-        String name = reader.readLine();
-        System.out.print("Industry: ");
-        String industry = reader.readLine();
-        System.out.print("Descricao: ");
-        String description = reader.readLine();
+    public static String SignupProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String email, String password, String name, String industry, String description) throws IOException {
+
 
 
         JsonObject jsonRequest = JsonUtils.createRequest("SIGNUP_RECRUITER");
@@ -34,6 +25,9 @@ public class RecruiterSignUp {
 
         System.out.println("Client:"+jsonRequest);
         String jsonResponse = JsonUtils.sendRequest(jsonRequest,out,in);
-        System.out.println("Server: "+jsonResponse);
+        System.out.println("Server:"+jsonResponse);
+
+        JsonObject jsonReturn = JsonUtils.parseJson(jsonResponse);
+        return jsonReturn.get("status").getAsString();
     }
 }

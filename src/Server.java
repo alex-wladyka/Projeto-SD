@@ -85,6 +85,36 @@ public class Server extends Thread {
                         case "LOGOUT_RECRUITER":
                             LogoutProcess(out, requestJson, "RECRUITER");
                             break;
+                        case "INCLUDE_SKILL":
+                            IncludeSkillProcess(out, requestJson);
+                            break;
+                        case "LOOKUP_SKILL":
+                            LookupSkillProcess(out, requestJson);
+                            break;
+                        case "LOOKUP_SKILLSET":
+                            //LookupSkillsetProcess(out, requestJson);
+                            break;
+                        case "DELETE_SKILL":
+                            DeleteSkillProcess(out, requestJson);
+                            break;
+                        case "UPDATE_SKILL":
+                            UpdateSkillProcess(out, requestJson);
+                            break;
+                        case "INCLUDE_JOB":
+                            IncludeJobProcess(out, requestJson);
+                            break;
+                        case "LOOKUP_JOB":
+                            LookupJobProcess(out, requestJson);
+                            break;
+                        case "LOOKUP_JOBSET":
+                            //LookupJobsetProcess(out, requestJson);
+                            break;
+                        case "DELETE_JOB":
+                            DeleteJobProcess(out, requestJson);
+                            break;
+                        case "UPDATE_JOB":
+                            UpdateJobProcess(out, requestJson);
+                            break;
                         default:
                             JsonObject Response = JsonUtils.createResponse(operation, "INVALID_OPERATION", "");
                             out.println(JsonUtils.toJsonString(Response));
@@ -280,7 +310,6 @@ public class Server extends Thread {
             int id = Integer.parseInt(rs.getString("id"));
             String token = JsonUtils.JWTValidator.generateToken(id, role);
             JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", token);
-            System.out.println(JsonUtils.toJsonString(responseJson));
             out.println(JsonUtils.toJsonString(responseJson));
             logWriter("Server",JsonUtils.toJsonString(responseJson));
             return;
@@ -422,6 +451,8 @@ public class Server extends Thread {
         st.setInt(1, id);
         st.executeUpdate();
 
+
+
         JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", "");
         out.println(JsonUtils.toJsonString(responseJson));
         logWriter("Server",JsonUtils.toJsonString(responseJson));
@@ -505,12 +536,438 @@ public class Server extends Thread {
         return;
     }
 
+    private void IncludeSkillProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException {
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
 
-    private void logWriter(String menssager, String message) throws IOException
-    {
-        fileWriter.write(menssager + ": " + message);
-        fileWriter.newLine();
-        fileWriter.flush();
+        String token = requestJson.get("token").getAsString();
+        String skill = dataJson.get("skill").getAsString();
+        int experience = dataJson.get("experience").getAsInt();
+        int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
+
+        PreparedStatement st;
+        ResultSet rs;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
+        st.setString(1, skill);
+
+        rs = st.executeQuery();
+
+        if (rs.next()) { //Verificação de Existência da Skill
+            int skillId = Integer.parseInt(rs.getString("idSkill"));
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE idSkillDataset = ? AND idCandidate = ?");
+            st.setInt(1, skillId);
+            st.setInt(2, candidateId);
+
+            rs = st.executeQuery();
+
+            if (rs.next()) { //Verificação de Cadastro Prévio da Skill
+                JsonObject responseJson = JsonUtils.createResponse("INCLUDE_SKILL", "SKILL_EXISTS", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+            }else{
+                st = Conexao.getConexao().prepareStatement("INSERT INTO skills (idCandidate,idSkillDataset,experiencia) VALUES (?, ?, ?)");
+                st.setInt(1, candidateId);
+                st.setInt(2, skillId);
+                st.setInt(3, experience);
+                st.executeUpdate();
+
+                JsonObject responseJson = JsonUtils.createResponse("INCLUDE_SKILL", "SUCCESS", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+
+            }
+
+        }else{
+            JsonObject responseJson = JsonUtils.createResponse("INCLUDE_SKILL", "SKILL_NOT_EXIST", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
+
+
+    }
+
+    private void LookupSkillProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+        String skill = dataJson.get("skill").getAsString();
+
+        String token = requestJson.get("token").getAsString();
+        int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
+
+        PreparedStatement st;
+        ResultSet rs;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
+        st.setString(1, skill);
+
+        rs = st.executeQuery();
+
+        if (rs.next()) {
+            int skillId = Integer.parseInt(rs.getString("idSkill"));
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE idSkillDataset = ? AND idCandidate = ?");
+            st.setInt(1, skillId);
+            st.setInt(2, candidateId);
+
+            rs = st.executeQuery();
+
+            if (rs.next()) {
+                JsonObject data = new JsonObject();
+                data.addProperty("skill",skill);
+                data.addProperty("experience",rs.getString("experiencia"));
+                JsonObject responseJson = JsonUtils.createResponse("LOOKUP_SKILL", "SUCCESS", "");
+                responseJson.add("data",data);
+
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                out.println(JsonUtils.toJsonString(responseJson));
+                return;
+
+            }
+        }
+        JsonObject responseJson = JsonUtils.createResponse("LOOKUP_SKILL", "SKILL_NOT_FOUND", "");
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+        return;
+
+    }
+
+    private void DeleteSkillProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+        String skill = dataJson.get("skill").getAsString();
+
+        String token = requestJson.get("token").getAsString();
+        int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
+
+        PreparedStatement st;
+        ResultSet rs;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
+        st.setString(1, skill);
+
+        rs = st.executeQuery();
+
+        if (rs.next()) {
+            int skillId = Integer.parseInt(rs.getString("idSkill"));
+
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE idSkillDataset = ? AND idCandidate = ?");
+            st.setInt(1, skillId);
+            st.setInt(2, candidateId);
+
+            rs = st.executeQuery();
+
+            if (rs.next()) {
+                st = Conexao.getConexao().prepareStatement("DELETE FROM skills WHERE idSkillDataset = ? AND idCandidate = ?");
+                st.setInt(1, skillId);
+                st.setInt(2, candidateId);
+                st.executeUpdate();
+
+                JsonObject responseJson = JsonUtils.createResponse("DELETE_SKILL", "SUCCESS", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+            }
+
+        }
+
+        JsonObject responseJson = JsonUtils.createResponse("DELETE_SKILL", "SKILL_NOT_FOUND", "");
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+        return;
+
+    }
+
+    private void UpdateSkillProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+        String skill = dataJson.get("skill").getAsString();
+        String newSkill = dataJson.get("newSkill").getAsString();
+        int experiencia = dataJson.get("experience").getAsInt();
+
+        String token = requestJson.get("token").getAsString();
+        int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
+
+        PreparedStatement st;
+        ResultSet rs;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
+        st.setString(1, skill);
+
+        rs = st.executeQuery();
+
+
+        if (rs.next()) { //Verificação de existencia da skill antiga inseria
+            int skillId = Integer.parseInt(rs.getString("idSkill"));
+
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE idSkillDataset = ? AND idCandidate = ?");
+            st.setInt(1, skillId);
+            st.setInt(2, candidateId);
+
+            rs = st.executeQuery();
+
+            if (rs.next()) { //Verificação do cadastro da skill inserida
+                st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
+                st.setString(1, newSkill);
+
+                rs = st.executeQuery();
+
+                if (rs.next()) { //Verificacao da existencia da skill nova
+                    int newSkillId = Integer.parseInt(rs.getString("idSkill"));
+
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE idSkillDataset = ? AND idCandidate = ?");
+                    st.setInt(1, newSkillId);
+                    st.setInt(2, candidateId);
+
+                    rs = st.executeQuery();
+
+                    if (rs.next()) { //Verificacao de cadastro da skill nova
+
+                        JsonObject responseJson = JsonUtils.createResponse("UPDATE_SKILL", "SKILL_EXISTS", "");
+                        logWriter("Server",JsonUtils.toJsonString(responseJson));
+                        out.println(JsonUtils.toJsonString(responseJson));
+                        return;
+
+                    }else {
+                        st = Conexao.getConexao().prepareStatement("UPDATE skills SET  idSkillDataset = ?, experiencia = ? WHERE idCandidate = ? AND idSkillDataset = ?");
+                        st.setInt(1, newSkillId);
+                        st.setInt(2, experiencia);
+                        st.setInt(3, candidateId);
+                        st.setInt(4, skillId);
+                        st.executeUpdate();
+
+                        JsonObject responseJson = JsonUtils.createResponse("UPDATE_SKILL", "SUCCESS", "");
+                        logWriter("Server",JsonUtils.toJsonString(responseJson));
+                        out.println(JsonUtils.toJsonString(responseJson));
+
+                        return;
+                    }
+                }
+            }
+        }
+        JsonObject responseJson = JsonUtils.createResponse("UPDATE_SKILL", "SKILL_NOT_FOUND", "");
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+        return;
+    }
+
+    private void IncludeJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException {
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        String token = requestJson.get("token").getAsString();
+        String skill = dataJson.get("skill").getAsString();
+        int experience = dataJson.get("experience").getAsInt();
+        int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
+
+        PreparedStatement st;
+        ResultSet rs;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
+        st.setString(1, skill);
+
+        rs = st.executeQuery();
+
+        if (rs.next()) { //Verificação de Existência da Skill
+            int skillId = Integer.parseInt(rs.getString("idSkill"));
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND idRecruiter = ?");
+            st.setInt(1, skillId);
+            st.setInt(2, recruiterId);
+
+            rs = st.executeQuery();
+
+            if (rs.next()) { //Verificação de Cadastro Prévio da Skill
+                JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "JOB_EXISTS", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+            }else{
+                st = Conexao.getConexao().prepareStatement("INSERT INTO JOBS (idRecruiter,idSkillDataset,experiencia) VALUES (?, ?, ?)");
+                st.setInt(1, recruiterId);
+                st.setInt(2, skillId);
+                st.setInt(3, experience);
+                st.executeUpdate();
+
+                JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "SUCCESS", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+
+            }
+
+        }else{
+            JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "SKILL_NOT_EXIST", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
+
+
+    }
+
+    private void LookupJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+        String skill = dataJson.get("skill").getAsString();
+
+        String token = requestJson.get("token").getAsString();
+        int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
+
+        PreparedStatement st;
+        ResultSet rs;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
+        st.setString(1, skill);
+
+        rs = st.executeQuery();
+
+        if (rs.next()) {
+            int skillId = Integer.parseInt(rs.getString("idSkill"));
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND idRecruiter = ?");
+            st.setInt(1, skillId);
+            st.setInt(2, recruiterId);
+
+            rs = st.executeQuery();
+
+            if (rs.next()) {
+                JsonObject data = new JsonObject();
+                data.addProperty("skill",skill);
+                data.addProperty("experience",rs.getString("experiencia"));
+                data.addProperty("id",rs.getString("idJob"));
+                JsonObject responseJson = JsonUtils.createResponse("LOOKUP_JOB", "SUCCESS", "");
+                responseJson.add("data",data);
+
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                out.println(JsonUtils.toJsonString(responseJson));
+                return;
+
+            }
+        }
+        JsonObject responseJson = JsonUtils.createResponse("LOOKUP_JOB", "JOB_NOT_FOUND", "");
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+        return;
+
+    }
+
+    private void DeleteJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+        int id = dataJson.get("id").getAsInt();
+
+        String token = requestJson.get("token").getAsString();
+        int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
+
+        PreparedStatement st;
+        ResultSet rs;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idJob = ?");
+        st.setInt(1, id);
+
+        rs = st.executeQuery();
+
+        if (rs.next()) {
+            int jobId = Integer.parseInt(rs.getString("idJob"));
+
+                st = Conexao.getConexao().prepareStatement("DELETE FROM jobs WHERE idJob = ?");
+                st.setInt(1, jobId);
+                st.executeUpdate();
+
+                JsonObject responseJson = JsonUtils.createResponse("DELETE_SKILL", "SUCCESS", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+
+        }
+
+        JsonObject responseJson = JsonUtils.createResponse("DELETE_JOB", "JOB_NOT_FOUND", "");
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+        return;
+
+    }
+
+    private void UpdateJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+        int id = dataJson.get("id").getAsInt();
+        String skill = dataJson.get("skill").getAsString();
+        String newSkill = dataJson.get("newSkill").getAsString();
+        int experiencia = dataJson.get("experience").getAsInt();
+
+        String token = requestJson.get("token").getAsString();
+        int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
+
+        PreparedStatement st;
+        ResultSet rs;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idJob = ?");
+        st.setInt(1, id);
+        rs = st.executeQuery();
+        if (rs.next()) {
+
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
+            st.setString(1, skill);
+
+            rs = st.executeQuery();
+
+
+            if (rs.next()) { //Verificação de existencia da skill antiga inseria
+                int skillId = Integer.parseInt(rs.getString("idSkill"));
+
+                st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND idRecruiter = ?");
+                st.setInt(1, skillId);
+                st.setInt(2, recruiterId);
+
+                rs = st.executeQuery();
+
+                if (rs.next()) { //Verificação do cadastro da skill inserida
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
+                    st.setString(1, newSkill);
+
+                    rs = st.executeQuery();
+
+                    if (rs.next()) { //Verificacao da existencia da skill nova
+                        int newSkillId = Integer.parseInt(rs.getString("idSkill"));
+
+                        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND idRecruiter = ?");
+                        st.setInt(1, newSkillId);
+                        st.setInt(2, recruiterId);
+
+                        rs = st.executeQuery();
+
+                        if (rs.next()) { //Verificacao de cadastro da skill nova
+
+                            JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "JOB_EXISTS", "");
+                            logWriter("Server", JsonUtils.toJsonString(responseJson));
+                            out.println(JsonUtils.toJsonString(responseJson));
+                            return;
+
+                        } else {
+                            st = Conexao.getConexao().prepareStatement("UPDATE jobs SET  idSkillDataset = ?, experiencia = ? WHERE idJob = ?");
+                            st.setInt(1, newSkillId);
+                            st.setInt(2, experiencia);
+                            st.setInt(3, id);
+                            st.executeUpdate();
+
+                            JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "SUCCESS", "");
+                            logWriter("Server", JsonUtils.toJsonString(responseJson));
+                            out.println(JsonUtils.toJsonString(responseJson));
+
+                            return;
+                        }
+                    }
+                }
+            }
+            JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "SKILL_NOT_FOUND", "");
+            logWriter("Server", JsonUtils.toJsonString(responseJson));
+            out.println(JsonUtils.toJsonString(responseJson));
+            return;
+        }
+        JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "JOB_NOT_FOUND", "");
+        logWriter("Server", JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+        return;
+    }
+
+    private void logWriter(String menssager, String message) throws IOException {
+        System.out.println(menssager + ": " + message);
     }
 
 

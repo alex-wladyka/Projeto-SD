@@ -4,7 +4,7 @@ import Recruiter.*;
 import java.io.*;
 import java.net.*;
 
-public class Client {
+/*public class Client {
     public static void main(String[] args) {
 
         PrintWriter out = null;
@@ -50,7 +50,7 @@ public class Client {
                         switch (opt) {
                             case 1:
                                 token = switch (select) {
-                                    case 1 -> CandidateLogin.LoginProcess(reader, out, in);
+                                    case 1 -> CandidateLogin.LoginProcess(reader, out, in,"","");
                                     case 2 -> RecruiterLogin.LoginProcess(reader, out, in);
                                     default -> token;
                                 };
@@ -155,4 +155,5 @@ public class Client {
 
     }
 
-}
+
+}*/

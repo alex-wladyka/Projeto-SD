@@ -1,5 +1,6 @@
 package Recruiter;
 
+import Janelas.Recruiter.JanelaLookupRecruiter;
 import Utils.JsonUtils;
 import com.google.gson.JsonObject;
 
@@ -10,10 +11,6 @@ import java.io.PrintWriter;
 public class RecruiterLookup {
 
     public static void LookupProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token) throws IOException {
-        if(token == null || token.isEmpty()) {
-            System.out.println("Você não está logado");
-            return;
-        }
 
         JsonObject requestJson = JsonUtils.createRequest("LOOKUP_ACCOUNT_RECRUITER");
         requestJson.addProperty("token", token);
@@ -27,11 +24,11 @@ public class RecruiterLookup {
         JsonObject jsonResponse = JsonUtils.parseJson(responseJson);
         JsonObject data = jsonResponse.get("data").getAsJsonObject();
 
-        System.out.println("Email: "+data.get("email").getAsString()+
-                           "\nSenha: "+data.get("password").getAsString()+
-                           "\nNome: "+data.get("name").getAsString()+
-                           "\nIndustry: "+data.get("industry").getAsString()+
-                           "\nDescrição: "+data.get("description").getAsString());
+        JanelaLookupRecruiter.setEmail(data.get("email").getAsString());
+        JanelaLookupRecruiter.setSenha(data.get("password").getAsString());
+        JanelaLookupRecruiter.setNome(data.get("name").getAsString());
+        JanelaLookupRecruiter.setIndustry(data.get("industry").getAsString());
+        JanelaLookupRecruiter.setDescricao(data.get("description").getAsString());
     }
 
 }

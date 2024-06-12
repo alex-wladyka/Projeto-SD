@@ -9,13 +9,7 @@ import java.io.PrintWriter;
 
 public class RecruiterLogin {
 
-    public static String LoginProcess (BufferedReader reader, PrintWriter out, BufferedReader in ) throws IOException {
-
-        System.out.print("Digite o seu e-mail: ");
-        String email = reader.readLine();
-
-        System.out.print("Digite a senha: ");
-        String password = reader.readLine();
+    public static String LoginProcess (BufferedReader reader, PrintWriter out, BufferedReader in, String email, String password) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("LOGIN_RECRUITER");
         JsonObject data = new JsonObject();
@@ -27,20 +21,17 @@ public class RecruiterLogin {
 
         String responseJson = JsonUtils.sendRequest(jsonRequest,out,in);
 
-        System.out.println("Server: "+responseJson);
+        System.out.println("Server:"+responseJson);
 
         JsonObject jsonResponse = JsonUtils.parseJson(responseJson);
         String status = jsonResponse.get("status").getAsString();
 
         switch (status) {
             case "SUCCESS":
-                System.out.println("\nLogin feito com sucesso!");
                 return jsonResponse.getAsJsonObject("data").get("token").getAsString();
             case "INVALID_LOGIN":
-                System.out.println("\nUsuário ou senha incorretas. Tente novamente.");
                 break;
             default:
-                System.out.println("\nErro ao fazer login.");
                 break;
         }
 

@@ -9,13 +9,13 @@ import com.google.gson.JsonObject;
 
 public class CandidateLogin {
 
-    public static String LoginProcess (BufferedReader reader, PrintWriter out, BufferedReader in ) throws IOException {
+    public static String LoginProcess (BufferedReader reader, PrintWriter out, BufferedReader in, String email, String password ) throws IOException {
 
-        System.out.print("Digite o seu e-mail: ");
+        /*System.out.print("Digite o seu e-mail: ");
         String email = reader.readLine();
 
         System.out.print("Digite a senha: ");
-        String password = reader.readLine();
+        String password = reader.readLine();*/
 
         JsonObject jsonRequest = JsonUtils.createRequest("LOGIN_CANDIDATE");
         JsonObject data = new JsonObject();
@@ -32,13 +32,13 @@ public class CandidateLogin {
 
         switch (status) {
             case "SUCCESS":
-                System.out.println("\nLogin feito com sucesso!");
+                //System.out.println("\nLogin feito com sucesso!");
                 return jsonResponse.getAsJsonObject("data").get("token").getAsString();
             case "INVALID_LOGIN":
-                System.out.println("\nUsuário ou senha incorretas. Tente novamente.");
+                //System.out.println("\nUsuário ou senha incorretas. Tente novamente.");
                 break;
             default:
-                System.out.println("\nErro ao fazer login.");
+                //System.out.println("\nErro ao fazer login.");
                 break;
         }
 

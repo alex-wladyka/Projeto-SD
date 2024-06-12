@@ -1,5 +1,6 @@
 package Candidate;
 
+import Janelas.Candidate.JanelaLookupCandidate;
 import Utils.JsonUtils;
 import com.google.gson.JsonObject;
 
@@ -27,9 +28,10 @@ public class CandidateLookup {
         JsonObject jsonResponse = JsonUtils.parseJson(responseJson);
         JsonObject data = jsonResponse.get("data").getAsJsonObject();
 
-        System.out.println("Email: "+data.get("email").getAsString()+
-                         "\nSenha: "+data.get("password").getAsString()+
-                         "\nNome: "+data.get("name").getAsString());
+        JanelaLookupCandidate.setEmail(data.get("email").getAsString());
+        JanelaLookupCandidate.setSenha(data.get("password").getAsString());
+        JanelaLookupCandidate.setNome(data.get("name").getAsString());
+
     }
 
 }

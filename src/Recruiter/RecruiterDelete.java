@@ -10,10 +10,6 @@ import java.io.PrintWriter;
 public class RecruiterDelete {
 
     public static void deleteProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token) throws IOException {
-        if(token == null || token.isEmpty()) {
-            System.out.println("Você não está logado");
-            return;
-        }
 
         JsonObject requestJson = JsonUtils.createRequest("DELETE_ACCOUNT_RECRUITER");
         requestJson.addProperty("token", token);
@@ -24,7 +20,7 @@ public class RecruiterDelete {
 
         String responseJson = JsonUtils.sendRequest(requestJson,out,in);
 
-        System.out.println("Server: "+responseJson);
+        System.out.println("Server:"+responseJson);
     }
 
 }

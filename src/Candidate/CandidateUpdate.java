@@ -9,21 +9,8 @@ import com.google.gson.JsonObject;
 
 
 public class CandidateUpdate {
-    public static void updateProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token) throws IOException {
+    public static String updateProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String email, String password, String name) throws IOException {
 
-        if(token == null || token.isEmpty()) {
-            System.out.println("Você não está logado");
-            return;
-        }
-
-        System.out.print("Novo e-mail: ");
-        String email = reader.readLine();
-
-        System.out.print("Nova senha: ");
-        String password = reader.readLine();
-
-        System.out.print("Novo nome: ");
-        String name = reader.readLine();
 
 
         JsonObject jsonRequest = JsonUtils.createRequest("UPDATE_ACCOUNT_CANDIDATE");
@@ -40,19 +27,20 @@ public class CandidateUpdate {
         System.out.println("Server: "+jsonResponse);
 
         JsonObject responseJson = JsonUtils.parseJson(jsonResponse);
-        String status = responseJson.get("status").getAsString();
 
-        switch (status) {
+        return responseJson.get("status").getAsString();
+
+        /*switch (status) {
             case "SUCCESS":
-                System.out.println("Dados alterados com sucesso!");
+
                 return;
             case "INVALID_EMAIL":
-                System.out.println("E-mail já cadastrado");
+
                 break;
             default:
-                System.out.println("Erro ao fazer atualizacao.");
+
                 break;
-        }
+        }*/
 
     }
 }
