@@ -126,7 +126,7 @@
                       <text value="ID:"/>
                     </properties>
                   </component>
-                  <component id="310af" class="javax.swing.JLabel" binding="idField">
+                  <component id="310af" class="javax.swing.JLabel" binding="idLabel">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>

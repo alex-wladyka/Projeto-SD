@@ -1,9 +1,12 @@
 package Janelas.Recruiter.Jobs;
 
+import Recruiter.Jobs.JobLookup;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 public class JobLookupJanela extends JFrame {
@@ -13,7 +16,9 @@ public class JobLookupJanela extends JFrame {
     private JLabel skillLabel;
     private JLabel experienceLabel;
     private JButton voltarButton;
-    private JLabel idField;
+    private JLabel idLabel;
+    private static String skill;
+    private static String experience;
 
     public JobLookupJanela(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
 
@@ -27,14 +32,42 @@ public class JobLookupJanela extends JFrame {
         pesquisarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                try {
+                    String status = JobLookup.LookupSkillProcess(reader,out,in,token,IDField.getText());
+
+                    switch(status) {
+                        case "SUCCESS":
+                            skillLabel.setText(skill);
+                            experienceLabel.setText(experience);
+                            idLabel.setText(IDField.getText());
+                            break;
+                        case "JOB_NOT_FOUND":
+                            JOptionPane.showMessageDialog(null,"A vaga não pode ser encontrada.","Aviso",JOptionPane.WARNING_MESSAGE);
+                            break;
+                        default:
+                            JOptionPane.showMessageDialog(null,"Houve um erro na pesquisa","Erro",JOptionPane.ERROR_MESSAGE);
+                            break;
+                    }
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
 
             }
         });
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                new MenuJobs(reader,out,in,token);
+                setVisible(false);
             }
         });
+    }
+
+    public static void setSkill(String skill) {
+        JobLookupJanela.skill = skill;
+    }
+
+    public static void setExperience(String experience) {
+        JobLookupJanela.experience = experience;
     }
 }

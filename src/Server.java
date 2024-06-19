@@ -1,17 +1,13 @@
 import java.io.*;
 import java.net.*;
 
-import Candidate.Candidate;
 import Utils.JsonUtils;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 public class Server extends Thread {
 
@@ -92,7 +88,7 @@ public class Server extends Thread {
                             LookupSkillProcess(out, requestJson);
                             break;
                         case "LOOKUP_SKILLSET":
-                            //LookupSkillsetProcess(out, requestJson);
+                            LookupSkillsetProcess(out, requestJson);
                             break;
                         case "DELETE_SKILL":
                             DeleteSkillProcess(out, requestJson);
@@ -107,13 +103,16 @@ public class Server extends Thread {
                             LookupJobProcess(out, requestJson);
                             break;
                         case "LOOKUP_JOBSET":
-                            //LookupJobsetProcess(out, requestJson);
+                            LookupJobsetProcess(out, requestJson);
                             break;
                         case "DELETE_JOB":
                             DeleteJobProcess(out, requestJson);
                             break;
                         case "UPDATE_JOB":
                             UpdateJobProcess(out, requestJson);
+                            break;
+                        case "SEARCH_JOB":
+                            SearchJobProcess(out, requestJson);
                             break;
                         default:
                             JsonObject Response = JsonUtils.createResponse(operation, "INVALID_OPERATION", "");
@@ -719,7 +718,7 @@ public class Server extends Thread {
                     st.setInt(2, candidateId);
 
                     rs = st.executeQuery();
-
+                    
                     if (rs.next()) { //Verificacao de cadastro da skill nova
 
                         JsonObject responseJson = JsonUtils.createResponse("UPDATE_SKILL", "SKILL_EXISTS", "");
@@ -750,6 +749,260 @@ public class Server extends Thread {
         return;
     }
 
+    private void LookupSkillsetProcess(PrintWriter out, JsonObject requestJson) throws SQLException, IOException {
+        String token = requestJson.get("token").getAsString();
+        int candidateId = JsonUtils.JWTValidator.getIdClaim(token);
+        String nameSkill,experiencia;
+
+        JsonObject data = new JsonObject();
+        var skillsArray = new JsonArray();
+
+        PreparedStatement st;
+        ResultSet rs,rs2;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE idCandidate = ?");
+        st.setInt(1, candidateId);
+        rs = st.executeQuery();
+
+
+
+
+        while (rs.next()) {
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+            st.setInt(1, rs.getInt("idSkillDataset"));
+
+            rs2 = st.executeQuery();
+            if (rs2.next()) {
+                nameSkill = rs2.getString("nameSkill");
+            }
+            else {
+                nameSkill = "";
+            }
+
+            experiencia = rs.getString("experiencia");
+
+            var skillObject = new JsonObject();
+            skillObject.addProperty("skill", nameSkill);
+            skillObject.addProperty("experience", experiencia);
+            skillsArray.add(skillObject);
+
+        }
+
+        data.addProperty("skillset_size",skillsArray.size());
+        data.add("skillset", skillsArray);
+
+        JsonObject responseJson = JsonUtils.createResponse("LOOKUP_SKILLSET", "SUCCESS", "");
+        responseJson.add("data",data);
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+        return;
+
+    }
+
+    private void SearchJobProcess(PrintWriter out, JsonObject requestJson) throws SQLException, IOException {
+        String token = requestJson.get("token").getAsString();
+
+        if(token.isEmpty() || token == null){
+            JsonObject responseJson = JsonUtils.createResponse("SEARCH_JOB", "INVALID_TOKEN", "");
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            out.println(JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
+        String nameSkill,experiencia,idJob;
+        var jobArray = new JsonArray();
+        JsonObject data = requestJson.get("data").getAsJsonObject();
+        PreparedStatement st;
+        ResultSet rs,rs2;
+
+        if(!data.has("skill")){
+
+            int experienciaSearch = data.get("experience").getAsInt();
+
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE experiencia <= ?");
+            st.setInt(1, experienciaSearch);
+            rs = st.executeQuery();
+
+            while (rs.next()) {
+                st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                st.setInt(1, rs.getInt("idSkillDataset"));
+
+                rs2 = st.executeQuery();
+                if (rs2.next()) {
+                    nameSkill = rs2.getString("nameSkill");
+                }
+                else {
+                    nameSkill = "";
+                }
+
+                experiencia = rs.getString("experiencia");
+                idJob = rs.getString("idJob");
+
+                var jobObject = new JsonObject();
+                jobObject.addProperty("skill", nameSkill);
+                jobObject.addProperty("experience", experiencia);
+                jobObject.addProperty("id", idJob);
+                jobArray.add(jobObject);
+
+            }
+        }
+        else if (!data.has("experience")) {
+            JsonArray skillArray = data.get("skill").getAsJsonArray();
+            int [] idSkills = new int[skillArray.size()];
+            for(int i = 0 ; i<skillArray.size() ; i++){
+                st = Conexao.getConexao().prepareStatement("SELECT idSkill FROM skilldataset WHERE nameSkill = ?");
+                st.setString(1, skillArray.get(i).getAsString());
+
+                rs = st.executeQuery();
+
+                if (rs.next()) {
+                    idSkills[i] = rs.getInt("idSkill");
+                };
+
+            }
+
+
+            for (int i = 0 ; i<idSkills.length ; i++){
+
+                st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ?");
+                st.setInt(1, idSkills[i]);
+                rs = st.executeQuery();
+
+                while (rs.next()) {
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                    st.setInt(1, rs.getInt("idSkillDataset"));
+
+                    rs2 = st.executeQuery();
+                    if (rs2.next()) {
+                        nameSkill = rs2.getString("nameSkill");
+                    }
+                    else {
+                        nameSkill = "";
+                    }
+
+                    experiencia = rs.getString("experiencia");
+                    idJob = rs.getString("idJob");
+
+                    var jobObject = new JsonObject();
+                    jobObject.addProperty("skill", nameSkill);
+                    jobObject.addProperty("experience", experiencia);
+                    jobObject.addProperty("id", idJob);
+                    jobArray.add(jobObject);
+
+                }
+            }
+        }
+        else {
+            if(data.get("filter").getAsString().equals("AND")){
+
+                JsonArray skillArray = data.get("skill").getAsJsonArray();
+                int experienciaSearch = data.get("experience").getAsInt();
+                int [] idSkills = new int[skillArray.size()];
+                for(int i = 0 ; i<skillArray.size() ; i++){
+                    st = Conexao.getConexao().prepareStatement("SELECT idSkill FROM skilldataset WHERE nameSkill = ?");
+                    st.setString(1, skillArray.get(i).getAsString());
+
+                    rs = st.executeQuery();
+
+                    if (rs.next()) {
+                        idSkills[i] = rs.getInt("idSkill");
+                    };
+
+                }
+
+
+                for (int i = 0 ; i<idSkills.length ; i++){
+
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND experiencia <= ?");
+                    st.setInt(1, idSkills[i]);
+                    st.setInt(2, experienciaSearch);
+                    rs = st.executeQuery();
+
+                    while (rs.next()) {
+                        st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                        st.setInt(1, rs.getInt("idSkillDataset"));
+
+                        rs2 = st.executeQuery();
+                        if (rs2.next()) {
+                            nameSkill = rs2.getString("nameSkill");
+                        }
+                        else {
+                            nameSkill = "";
+                        }
+
+                        experiencia = rs.getString("experiencia");
+                        idJob = rs.getString("idJob");
+
+                        var jobObject = new JsonObject();
+                        jobObject.addProperty("skill", nameSkill);
+                        jobObject.addProperty("experience", experiencia);
+                        jobObject.addProperty("id", idJob);
+                        jobArray.add(jobObject);
+
+                    }
+                }
+            }
+            else if(data.get("filter").getAsString().equals("OR")){
+
+                JsonArray skillArray = data.get("skill").getAsJsonArray();
+                int experienciaSearch = data.get("experience").getAsInt();
+                int [] idSkills = new int[skillArray.size()];
+                for(int i = 0 ; i<skillArray.size() ; i++){
+                    st = Conexao.getConexao().prepareStatement("SELECT idSkill FROM skilldataset WHERE nameSkill = ?");
+                    st.setString(1, skillArray.get(i).getAsString());
+
+                    rs = st.executeQuery();
+
+                    if (rs.next()) {
+                        idSkills[i] = rs.getInt("idSkill");
+                    };
+
+                }
+
+
+                for (int i = 0 ; i<idSkills.length ; i++){
+
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? OR experiencia <= ?");
+                    st.setInt(1, idSkills[i]);
+                    st.setInt(2, experienciaSearch);
+                    rs = st.executeQuery();
+
+                    while (rs.next()) {
+                        st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                        st.setInt(1, rs.getInt("idSkillDataset"));
+
+                        rs2 = st.executeQuery();
+                        if (rs2.next()) {
+                            nameSkill = rs2.getString("nameSkill");
+                        }
+                        else {
+                            nameSkill = "";
+                        }
+
+                        experiencia = rs.getString("experiencia");
+                        idJob = rs.getString("idJob");
+
+                        var jobObject = new JsonObject();
+                        jobObject.addProperty("skill", nameSkill);
+                        jobObject.addProperty("experience", experiencia);
+                        jobObject.addProperty("id", idJob);
+                        jobArray.add(jobObject);
+
+                    }
+                }
+            }
+        }
+
+        data.addProperty("jobset_size", jobArray.size());
+        data.add("jobset", jobArray);
+
+        JsonObject responseJson = JsonUtils.createResponse("SEARCH_JOB", "SUCCESS", "");
+        responseJson.add("data",data);
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+        return;
+    }
+
     private void IncludeJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
 
@@ -768,30 +1021,17 @@ public class Server extends Thread {
 
         if (rs.next()) { //Verificação de Existência da Skill
             int skillId = Integer.parseInt(rs.getString("idSkill"));
-            st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND idRecruiter = ?");
-            st.setInt(1, skillId);
-            st.setInt(2, recruiterId);
 
-            rs = st.executeQuery();
+            st = Conexao.getConexao().prepareStatement("INSERT INTO JOBS (idRecruiter,idSkillDataset,experiencia) VALUES (?, ?, ?)");
+            st.setInt(1, recruiterId);
+            st.setInt(2, skillId);
+            st.setInt(3, experience);
+            st.executeUpdate();
 
-            if (rs.next()) { //Verificação de Cadastro Prévio da Skill
-                JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "JOB_EXISTS", "");
-                out.println(JsonUtils.toJsonString(responseJson));
-                logWriter("Server",JsonUtils.toJsonString(responseJson));
-                return;
-            }else{
-                st = Conexao.getConexao().prepareStatement("INSERT INTO JOBS (idRecruiter,idSkillDataset,experiencia) VALUES (?, ?, ?)");
-                st.setInt(1, recruiterId);
-                st.setInt(2, skillId);
-                st.setInt(3, experience);
-                st.executeUpdate();
-
-                JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "SUCCESS", "");
-                out.println(JsonUtils.toJsonString(responseJson));
-                logWriter("Server",JsonUtils.toJsonString(responseJson));
-                return;
-
-            }
+            JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "SUCCESS", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server", JsonUtils.toJsonString(responseJson));
+            return;
 
         }else{
             JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "SKILL_NOT_EXIST", "");
@@ -806,7 +1046,7 @@ public class Server extends Thread {
 
     private void LookupJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
-        String skill = dataJson.get("skill").getAsString();
+        int id = dataJson.get("id").getAsInt();
 
         String token = requestJson.get("token").getAsString();
         int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
@@ -814,23 +1054,29 @@ public class Server extends Thread {
         PreparedStatement st;
         ResultSet rs;
 
-        st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
-        st.setString(1, skill);
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idJob = ? AND idRecruiter = ?");
+        st.setInt(1, id);
+        st.setInt(2, recruiterId);
 
         rs = st.executeQuery();
 
+
+
         if (rs.next()) {
-            int skillId = Integer.parseInt(rs.getString("idSkill"));
-            st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND idRecruiter = ?");
-            st.setInt(1, skillId);
-            st.setInt(2, recruiterId);
+                int idSkill = rs.getInt("idSkillDataset");
+                String experience = rs.getString("experiencia");
 
-            rs = st.executeQuery();
+                st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                st.setInt(1,idSkill);
+                ResultSet rs2 = st.executeQuery();
+                String nameSkill = null;
+                if (rs2.next()) {
+                    nameSkill = rs2.getString("nameSkill");
+                }
 
-            if (rs.next()) {
                 JsonObject data = new JsonObject();
-                data.addProperty("skill",skill);
-                data.addProperty("experience",rs.getString("experiencia"));
+                data.addProperty("skill",nameSkill);
+                data.addProperty("experience",experience);
                 data.addProperty("id",rs.getString("idJob"));
                 JsonObject responseJson = JsonUtils.createResponse("LOOKUP_JOB", "SUCCESS", "");
                 responseJson.add("data",data);
@@ -839,7 +1085,7 @@ public class Server extends Thread {
                 out.println(JsonUtils.toJsonString(responseJson));
                 return;
 
-            }
+
         }
         JsonObject responseJson = JsonUtils.createResponse("LOOKUP_JOB", "JOB_NOT_FOUND", "");
         logWriter("Server",JsonUtils.toJsonString(responseJson));
@@ -870,7 +1116,7 @@ public class Server extends Thread {
                 st.setInt(1, jobId);
                 st.executeUpdate();
 
-                JsonObject responseJson = JsonUtils.createResponse("DELETE_SKILL", "SUCCESS", "");
+                JsonObject responseJson = JsonUtils.createResponse("DELETE_JOB", "SUCCESS", "");
                 out.println(JsonUtils.toJsonString(responseJson));
                 logWriter("Server",JsonUtils.toJsonString(responseJson));
                 return;
@@ -888,7 +1134,6 @@ public class Server extends Thread {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
         int id = dataJson.get("id").getAsInt();
         String skill = dataJson.get("skill").getAsString();
-        String newSkill = dataJson.get("newSkill").getAsString();
         int experiencia = dataJson.get("experience").getAsInt();
 
         String token = requestJson.get("token").getAsString();
@@ -907,63 +1152,81 @@ public class Server extends Thread {
 
             rs = st.executeQuery();
 
-
             if (rs.next()) { //Verificação de existencia da skill antiga inseria
                 int skillId = Integer.parseInt(rs.getString("idSkill"));
 
-                st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND idRecruiter = ?");
+                st = Conexao.getConexao().prepareStatement("UPDATE jobs SET  idSkillDataset = ?, experiencia = ? WHERE idJob = ?");
                 st.setInt(1, skillId);
-                st.setInt(2, recruiterId);
+                st.setInt(2, experiencia);
+                st.setInt(3, id);
+                st.executeUpdate();
 
-                rs = st.executeQuery();
+                JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "SUCCESS", "");
+                logWriter("Server", JsonUtils.toJsonString(responseJson));
+                out.println(JsonUtils.toJsonString(responseJson));
 
-                if (rs.next()) { //Verificação do cadastro da skill inserida
-                    st = Conexao.getConexao().prepareStatement("SELECT * FROM skillDataset WHERE nameSkill = ?");
-                    st.setString(1, newSkill);
-
-                    rs = st.executeQuery();
-
-                    if (rs.next()) { //Verificacao da existencia da skill nova
-                        int newSkillId = Integer.parseInt(rs.getString("idSkill"));
-
-                        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND idRecruiter = ?");
-                        st.setInt(1, newSkillId);
-                        st.setInt(2, recruiterId);
-
-                        rs = st.executeQuery();
-
-                        if (rs.next()) { //Verificacao de cadastro da skill nova
-
-                            JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "JOB_EXISTS", "");
-                            logWriter("Server", JsonUtils.toJsonString(responseJson));
-                            out.println(JsonUtils.toJsonString(responseJson));
-                            return;
-
-                        } else {
-                            st = Conexao.getConexao().prepareStatement("UPDATE jobs SET  idSkillDataset = ?, experiencia = ? WHERE idJob = ?");
-                            st.setInt(1, newSkillId);
-                            st.setInt(2, experiencia);
-                            st.setInt(3, id);
-                            st.executeUpdate();
-
-                            JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "SUCCESS", "");
-                            logWriter("Server", JsonUtils.toJsonString(responseJson));
-                            out.println(JsonUtils.toJsonString(responseJson));
-
-                            return;
-                        }
-                    }
-                }
+                return;
+            }else {
+                JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "SKILL_NOT_FOUND", "");
+                logWriter("Server", JsonUtils.toJsonString(responseJson));
+                out.println(JsonUtils.toJsonString(responseJson));
+                return;
             }
-            JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "SKILL_NOT_FOUND", "");
+        }else {
+            JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "JOB_NOT_FOUND", "");
             logWriter("Server", JsonUtils.toJsonString(responseJson));
             out.println(JsonUtils.toJsonString(responseJson));
             return;
         }
-        JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "JOB_NOT_FOUND", "");
-        logWriter("Server", JsonUtils.toJsonString(responseJson));
+    }
+
+    private void LookupJobsetProcess(PrintWriter out, JsonObject requestJson) throws SQLException, IOException {
+        String token = requestJson.get("token").getAsString();
+        int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
+        String nameSkill,experiencia,idJob;
+
+        JsonObject data = new JsonObject();
+        var jobArray = new JsonArray();
+
+        PreparedStatement st;
+        ResultSet rs,rs2;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idRecruiter = ?");
+        st.setInt(1, recruiterId);
+        rs = st.executeQuery();
+
+        while (rs.next()) {
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+            st.setInt(1, rs.getInt("idSkillDataset"));
+
+            rs2 = st.executeQuery();
+            if (rs2.next()) {
+                nameSkill = rs2.getString("nameSkill");
+            }
+            else {
+                nameSkill = "";
+            }
+
+            experiencia = rs.getString("experiencia");
+            idJob = rs.getString("idJob");
+
+            var jobObject = new JsonObject();
+            jobObject.addProperty("skill", nameSkill);
+            jobObject.addProperty("experience", experiencia);
+            jobObject.addProperty("id", idJob);
+            jobArray.add(jobObject);
+
+        }
+
+        data.addProperty("jobset_size", jobArray.size());
+        data.add("jobset", jobArray);
+
+        JsonObject responseJson = JsonUtils.createResponse("LOOKUP_JOBSET", "SUCCESS", "");
+        responseJson.add("data",data);
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
         out.println(JsonUtils.toJsonString(responseJson));
         return;
+
     }
 
     private void logWriter(String menssager, String message) throws IOException {

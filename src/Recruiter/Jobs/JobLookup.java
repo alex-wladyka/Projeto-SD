@@ -1,6 +1,7 @@
 package Recruiter.Jobs;
 
 import Janelas.Candidate.Skills.SkillLookupJanela;
+import Janelas.Recruiter.Jobs.JobLookupJanela;
 import Utils.JsonUtils;
 import com.google.gson.JsonObject;
 
@@ -26,11 +27,11 @@ public class JobLookup {
 
         String status = jsonReturn.get("status").getAsString();
 
-        /*if (status.equals("SUCCESS")) {
+        if (status.equals("SUCCESS")) {
             JsonObject dataResponse = jsonReturn.get("data").getAsJsonObject();
-            SkillLookupJanela.setSkill(dataResponse.get("skill").getAsString());
-            SkillLookupJanela.setExperience(dataResponse.get("experience").getAsString());
-        }*/
+            JobLookupJanela.setSkill(dataResponse.get("skill").getAsString());
+            JobLookupJanela.setExperience(dataResponse.get("experience").getAsString());
+        }
 
         return status;
 

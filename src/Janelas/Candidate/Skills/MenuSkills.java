@@ -1,11 +1,13 @@
 package Janelas.Candidate.Skills;
 
+import Candidate.Skills.SkillSetLookup;
 import Janelas.Candidate.MenuPrincipalCandidato;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 public class MenuSkills extends JFrame {
@@ -52,7 +54,8 @@ public class MenuSkills extends JFrame {
         verificarSkillSetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                new SkillSetLookupJanela(reader,out,in,token);
+                setVisible(false);
             }
         });
         modificarSkillButton.addActionListener(new ActionListener() {

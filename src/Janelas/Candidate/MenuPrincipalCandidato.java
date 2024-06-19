@@ -19,6 +19,7 @@ public class MenuPrincipalCandidato extends JFrame {
     private JButton deletarDadosButton;
     private JButton skillsButton;
     private JButton logoutButton;
+    private JButton buscarVagasButton;
 
 
     public MenuPrincipalCandidato(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
@@ -77,6 +78,13 @@ public class MenuPrincipalCandidato extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new MenuSkills(reader, out, in, token);
+                setVisible(false);
+            }
+        });
+        buscarVagasButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new SearchJobjanela(reader, out, in, token);
                 setVisible(false);
             }
         });

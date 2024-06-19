@@ -2,6 +2,7 @@ package Janelas.Recruiter;
 
 
 import Janelas.MenuRole;
+import Janelas.Recruiter.Jobs.MenuJobs;
 import Recruiter.RecruiterDelete;
 import Recruiter.RecruiterLogout;
 
@@ -63,7 +64,8 @@ public class MenuPrincipalRecruiter extends JFrame {
         vagasButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                new MenuJobs(reader, out, in, token);
+                setVisible(false);
             }
         });
         logoutButton.addActionListener(new ActionListener() {
