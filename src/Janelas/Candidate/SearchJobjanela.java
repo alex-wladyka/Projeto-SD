@@ -80,7 +80,7 @@ public class SearchJobjanela extends JFrame{
                 jobSetlist.setModel(model);
                 List<Jobs> jobSet = null;
                 if(condition.isVisible()){ //Vaga Selecionada
-                    if(conditionExperience.isVisible()){ //Condição selecionada
+                    if(conditionExperience.isVisible()){ //Condição selecionadas
                         try {
                             jobSet = SearchJob_All.SearchJobAllProcess(reader,out,in,token,skillExpField.getText(),expField.getText(),filter);
                         } catch (IOException ex) {
