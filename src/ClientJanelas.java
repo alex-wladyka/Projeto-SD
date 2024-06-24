@@ -18,14 +18,9 @@ public class ClientJanelas {
 
         try {
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-
             out = new PrintWriter(SocketClass.socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(SocketClass.socket.getInputStream()));
-
-            String token = null;
-
-            new MenuRole(reader, out, in);
+            new MenuRole(out, in);
 
         }catch (IOException e) {
             System.err.println("Erro ao conectar ao servidor: " + e.getMessage());

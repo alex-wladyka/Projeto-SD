@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class SkillLookup {
-    public static String LookupSkillProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String skill) throws IOException {
+    public static String LookupSkillProcess(PrintWriter out, BufferedReader in, String token, String skill) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("LOOKUP_SKILL");
         jsonRequest.addProperty("token", token);

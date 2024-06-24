@@ -22,7 +22,7 @@ public class LookupJobset_Janela extends JFrame {
     DefaultListModel<Jobs> model = new DefaultListModel();
     private JList<Jobs> jobSetList;
 
-    public LookupJobset_Janela(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public LookupJobset_Janela(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Janela Lookup Jobset");
@@ -34,7 +34,7 @@ public class LookupJobset_Janela extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuJobs(reader,out,in,token);
+                new MenuJobs(out,in,token);
                 setVisible(false);
             }
         });
@@ -44,7 +44,7 @@ public class LookupJobset_Janela extends JFrame {
                 try {
                     model.clear();
                     jobSetList.setModel(model);
-                    List<Jobs> jobSet = JobSet_Lookup.LookupJobSetProcess(reader,out,in,token);
+                    List<Jobs> jobSet = JobSet_Lookup.LookupJobSetProcess(out,in,token);
                     //JScrollPane jScrollPane = new JScrollPane();
 
                     if (jobSet.isEmpty()) {

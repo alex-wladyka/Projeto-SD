@@ -7,7 +7,7 @@ import java.io.*;
 
 public class CandidateSignUp {
 
-    public static String SignupProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String email, String password, String name) throws IOException {
+    public static String SignupProcess(PrintWriter out, BufferedReader in, String email, String password, String name) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("SIGNUP_CANDIDATE");
         JsonObject data = new JsonObject();

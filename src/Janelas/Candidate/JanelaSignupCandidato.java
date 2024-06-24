@@ -19,7 +19,7 @@ public class JanelaSignupCandidato extends JFrame{
     private JButton voltarButton;
     private JButton continuarButton;
 
-    public JanelaSignupCandidato(BufferedReader reader, PrintWriter out, BufferedReader in) {
+    public JanelaSignupCandidato(PrintWriter out, BufferedReader in) {
 
         setContentPane(panel1);
         setTitle("Janela SignUp Candidato");
@@ -32,10 +32,10 @@ public class JanelaSignupCandidato extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String status = CandidateSignUp.SignupProcess(reader,out,in,emailField.getText(),senhaField.getText(),nomeField.getText());
+                    String status = CandidateSignUp.SignupProcess(out,in,emailField.getText(),senhaField.getText(),nomeField.getText());
                     if (status.equals("SUCCESS")) {
                         JOptionPane.showMessageDialog(null, "Conta cadastrada com sucesso!");
-                        new JanelaLogin(0,reader,out,in);
+                        new JanelaLogin(0,out,in);
                         setVisible(false);
                     }
                     else if (status.equals("USER_EXISTS")) {
@@ -52,7 +52,7 @@ public class JanelaSignupCandidato extends JFrame{
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuLogin(0,reader,out,in);
+                new MenuLogin(0,out,in);
                 setVisible(false);
             }
         });

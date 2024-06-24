@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class SkillDelete {
-    public static String deleteProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String Skill) throws IOException {
+    public static String deleteProcess(PrintWriter out, BufferedReader in, String token, String Skill) throws IOException {
 
         JsonObject requestJson = JsonUtils.createRequest("DELETE_SKILL");
         requestJson.addProperty("token", token);

@@ -1,6 +1,5 @@
 package Janelas.Recruiter.Jobs;
 
-import Janelas.Candidate.Skills.MenuSkills;
 import Recruiter.Jobs.JobUpdate;
 
 import javax.swing.*;
@@ -18,7 +17,7 @@ public class JobUpdateJanela extends JFrame {
     private JButton atualizarButton;
     private JTextField IDField;
 
-    public JobUpdateJanela(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public JobUpdateJanela(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Janela Update Jobs");
@@ -31,12 +30,12 @@ public class JobUpdateJanela extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String status = JobUpdate.UpdateSkillProcess(reader,out,in,token,IDField.getText(),novaSkillField.getText(),experienceSpinner.getValue().toString());
+                    String status = JobUpdate.UpdateSkillProcess(out,in,token,IDField.getText(),novaSkillField.getText(),experienceSpinner.getValue().toString());
 
                     switch(status){
                         case "SUCCESS":
                             JOptionPane.showMessageDialog(null,"A vaga foi alterada com sucesso");
-                            new MenuJobs(reader, out, in, token);
+                            new MenuJobs(out, in, token);
                             setVisible(false);
                             break;
                         case "SKILL_NOT_FOUND":
@@ -58,7 +57,7 @@ public class JobUpdateJanela extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuSkills(reader, out, in, token);
+                new MenuJobs(out, in, token);
                 setVisible(false);
             }
         });

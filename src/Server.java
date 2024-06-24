@@ -13,7 +13,6 @@ public class Server extends Thread {
 
     private Socket clientSocket;
     private BufferedWriter fileWriter;
-    private static final String DATABASE_FILE = "database.txt";
 
     public Server(Socket clientSoc, BufferedWriter writer) {
         clientSocket = clientSoc;
@@ -43,6 +42,15 @@ public class Server extends Thread {
                     JsonObject requestJson = JsonUtils.parseJson(jsonMessage);
                     String operation = requestJson.get("operation").getAsString();
 
+                    if(requestJson.has("token")) {
+                        if (requestJson.get("token").isJsonNull() || requestJson.get("token").getAsString().isEmpty()) {
+                            JsonObject responseJson = JsonUtils.createResponse(operation, "INVALID_TOKEN", "");
+                            logWriter("Server", JsonUtils.toJsonString(responseJson));
+                            out.println(JsonUtils.toJsonString(responseJson));
+                            return;
+                        }
+
+                    }
 
                     switch (operation) {
                         case "LOGIN_CANDIDATE":
@@ -114,6 +122,21 @@ public class Server extends Thread {
                         case "SEARCH_JOB":
                             SearchJobProcess(out, requestJson);
                             break;
+                        case "SET_JOB_AVAILABLE":
+                            UpdateJobAvaliabityProcess(out, requestJson);
+                            break;
+                        case "SET_JOB_SEARCHABLE":
+                            UpdateJobSearchableProcess(out, requestJson);
+                            break;
+                        case "SEARCH_CANDIDATE":
+                            SearchCandidateProcess(out, requestJson);
+                            break;
+                        case "CHOOSE_CANDIDATE":
+                            ChooseCandidateProcess(out, requestJson);
+                            break;
+                        case "GET_COMPANY":
+                            GetMessagesProcess(out, requestJson);
+                            break;
                         default:
                             JsonObject Response = JsonUtils.createResponse(operation, "INVALID_OPERATION", "");
                             out.println(JsonUtils.toJsonString(Response));
@@ -134,8 +157,6 @@ public class Server extends Thread {
             }
         }
     }
-
-
 
     private void SignUpProcess(PrintWriter out, JsonObject requestJson, String role) throws IOException, SQLException {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
@@ -236,33 +257,6 @@ public class Server extends Thread {
                 break;
         }
 
-
-
-        /*List<Candidate> candidates = readDatabase(); //criação da lista de usuarios
-
-        if(candidates.isEmpty()) {
-            id = 1;
-        }
-        else {
-            Candidate lastCreated = candidates.get(candidates.size()-1);
-            id = Integer.parseInt(lastCreated.getId()) + 1;
-        }
-
-        for (Candidate candidate : candidates) {//teste para ver se o email já foi cadastrado
-            if (candidate.getEmail().equals(email)) { //encontrou um email igual
-                JsonObject Response = JsonUtils.createResponse("SIGNUP_CANDIDATE", "USER_EXISTS", "");
-
-                out.println(JsonUtils.toJsonString(Response));
-                logWriter("Server", JsonUtils.toJsonString(Response));
-                return;
-            }
-        }
-        /*Candidate newUser = new Candidate(String.valueOf(id),email, password, name);
-        candidates.add(newUser);
-        writeDatabase(candidates);*/
-
-
-
         JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", "");
         out.println(JsonUtils.toJsonString(responseJson));
         logWriter("Server",JsonUtils.toJsonString(responseJson));
@@ -322,8 +316,6 @@ public class Server extends Thread {
 
     private void UpdateCandidateProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
-
-
 
         if ((dataJson.get("email").getAsString() == null || dataJson.get("email").getAsString().isEmpty() ) || (dataJson.get("password").getAsString() == null || dataJson.get("password").getAsString().isEmpty()) || (dataJson.get("name").getAsString() == null || dataJson.get("name").getAsString().isEmpty())) {
             JsonObject responseJson = JsonUtils.createResponse("UPDATE_ACCOUNT_CANDIDATE", "INVALID_FIELD", "");
@@ -538,6 +530,13 @@ public class Server extends Thread {
     private void IncludeSkillProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
 
+        if ((dataJson.get("skill").getAsString() == null || dataJson.get("skill").getAsString().isEmpty() ) || (dataJson.get("experience").getAsString() == null || dataJson.get("experience").getAsString().isEmpty() || !dataJson.get("experience").getAsString().matches("[0-9]+"))){
+            JsonObject responseJson = JsonUtils.createResponse("INCLUDE_SKILL", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
         String token = requestJson.get("token").getAsString();
         String skill = dataJson.get("skill").getAsString();
         int experience = dataJson.get("experience").getAsInt();
@@ -591,6 +590,14 @@ public class Server extends Thread {
 
     private void LookupSkillProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if(dataJson.get("skill").getAsString() == null || dataJson.get("skill").getAsString().isEmpty()){
+            JsonObject responseJson = JsonUtils.createResponse("LOOKUP_SKILL", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
         String skill = dataJson.get("skill").getAsString();
 
         String token = requestJson.get("token").getAsString();
@@ -634,6 +641,14 @@ public class Server extends Thread {
 
     private void DeleteSkillProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if(dataJson.get("skill").getAsString() == null || dataJson.get("skill").getAsString().isEmpty()){
+            JsonObject responseJson = JsonUtils.createResponse("DELETE_SKILL", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
         String skill = dataJson.get("skill").getAsString();
 
         String token = requestJson.get("token").getAsString();
@@ -679,6 +694,14 @@ public class Server extends Thread {
 
     private void UpdateSkillProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if ((dataJson.get("skill").getAsString() == null || dataJson.get("skill").getAsString().isEmpty() ) || (dataJson.get("newSkill").getAsString() == null || dataJson.get("newSkill").getAsString().isEmpty() ) || (dataJson.get("experience").getAsString() == null || dataJson.get("experience").getAsString().isEmpty() || !dataJson.get("experience").getAsString().matches("[0-9]+"))){
+            JsonObject responseJson = JsonUtils.createResponse("UPDATE_SKILL", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
         String skill = dataJson.get("skill").getAsString();
         String newSkill = dataJson.get("newSkill").getAsString();
         int experiencia = dataJson.get("experience").getAsInt();
@@ -800,39 +823,59 @@ public class Server extends Thread {
     }
 
     private void SearchJobProcess(PrintWriter out, JsonObject requestJson) throws SQLException, IOException {
-        String token = requestJson.get("token").getAsString();
 
-        if(token.isEmpty() || token == null){
-            JsonObject responseJson = JsonUtils.createResponse("SEARCH_JOB", "INVALID_TOKEN", "");
-            logWriter("Server",JsonUtils.toJsonString(responseJson));
-            out.println(JsonUtils.toJsonString(responseJson));
-            return;
+
+        String token = requestJson.get("token").getAsString(); //Pega o token do candidato
+
+        String nameSkill = "",experiencia,idJob;
+
+        var jobArray = new JsonArray(); //Cria a variável da lista de empregos
+        JsonObject data = requestJson.get("data").getAsJsonObject();
+
+        if(data.has("skill")){
+            if(data.get("skill").getAsString() == null || data.get("skill").getAsString().isEmpty()){
+                JsonObject responseJson = JsonUtils.createResponse("SEARCH_JOB", "INVALID_FIELD", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+            }
+        }
+        if(data.has("experience")){
+            if((data.get("experience").getAsString() == null || data.get("experience").getAsString().isEmpty() || !data.get("experience").getAsString().matches("[0-9]+"))){
+                JsonObject responseJson = JsonUtils.createResponse("SEARCH_JOB", "INVALID_FIELD", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+            }
+        }
+        if(data.has("filter")){
+            if((data.get("filter").getAsString() == null || data.get("filter").getAsString().isEmpty()) || !(data.get("filter").getAsString().equals("AND") || data.get("filter").getAsString().equals("OR"))){
+                JsonObject responseJson = JsonUtils.createResponse("SEARCH_JOB", "INVALID_FIELD", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+            }
         }
 
-        String nameSkill,experiencia,idJob;
-        var jobArray = new JsonArray();
-        JsonObject data = requestJson.get("data").getAsJsonObject();
         PreparedStatement st;
         ResultSet rs,rs2;
 
-        if(!data.has("skill")){
+        if(!data.has("skill")){ //Se o JSON não possuir o campo skill, então a busca é por experiência
 
             int experienciaSearch = data.get("experience").getAsInt();
 
-            st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE experiencia <= ?");
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE experiencia <= ? and searchable = ?"); //faz um select no banco de dados para as vegas com experencia menor ou igual a selecionada
             st.setInt(1, experienciaSearch);
+            st.setBoolean(2,true);
             rs = st.executeQuery();
 
-            while (rs.next()) {
+            while (rs.next()) { // enquanto houver um resultado na busca feita
                 st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
-                st.setInt(1, rs.getInt("idSkillDataset"));
+                st.setInt(1, rs.getInt("idSkillDataset")); //Pegar o nome da experiencia
 
                 rs2 = st.executeQuery();
                 if (rs2.next()) {
                     nameSkill = rs2.getString("nameSkill");
-                }
-                else {
-                    nameSkill = "";
                 }
 
                 experiencia = rs.getString("experiencia");
@@ -842,16 +885,17 @@ public class Server extends Thread {
                 jobObject.addProperty("skill", nameSkill);
                 jobObject.addProperty("experience", experiencia);
                 jobObject.addProperty("id", idJob);
-                jobArray.add(jobObject);
+                jobArray.add(jobObject); // adicionar no array de vagas
 
             }
         }
-        else if (!data.has("experience")) {
-            JsonArray skillArray = data.get("skill").getAsJsonArray();
-            int [] idSkills = new int[skillArray.size()];
+        else if (!data.has("experience")) { // se o json conter o campo "skill mas" não conter o campo "experience" então a busca é por skills
+            JsonArray skillArray = data.get("skill").getAsJsonArray(); //recebe o array de skills pesquisadas
+            int [] idSkills = new int[skillArray.size()]; //vetor que guarda os ids das skills
             for(int i = 0 ; i<skillArray.size() ; i++){
                 st = Conexao.getConexao().prepareStatement("SELECT idSkill FROM skilldataset WHERE nameSkill = ?");
                 st.setString(1, skillArray.get(i).getAsString());
+
 
                 rs = st.executeQuery();
 
@@ -862,22 +906,20 @@ public class Server extends Thread {
             }
 
 
-            for (int i = 0 ; i<idSkills.length ; i++){
+            for (int i = 0 ; i<idSkills.length ; i++){ //for para pesquisar vagas na quantidade que foi pesquisada
 
-                st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ?");
+                st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? and searchable = ?"); //faz um select no banco de dados para as vagas que tenham o id da vaga pesquiada
                 st.setInt(1, idSkills[i]);
+                st.setBoolean(2,true);
                 rs = st.executeQuery();
 
-                while (rs.next()) {
+                while (rs.next()) { //mesmo processo da busca por experiencia
                     st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
                     st.setInt(1, rs.getInt("idSkillDataset"));
 
                     rs2 = st.executeQuery();
                     if (rs2.next()) {
                         nameSkill = rs2.getString("nameSkill");
-                    }
-                    else {
-                        nameSkill = "";
                     }
 
                     experiencia = rs.getString("experiencia");
@@ -892,12 +934,13 @@ public class Server extends Thread {
                 }
             }
         }
-        else {
-            if(data.get("filter").getAsString().equals("AND")){
+        else { //se o json possuir os campos "skill" e "experience"
+            if(data.get("filter").getAsString().equals("AND")){ //se o filtro for E
 
                 JsonArray skillArray = data.get("skill").getAsJsonArray();
                 int experienciaSearch = data.get("experience").getAsInt();
                 int [] idSkills = new int[skillArray.size()];
+
                 for(int i = 0 ; i<skillArray.size() ; i++){
                     st = Conexao.getConexao().prepareStatement("SELECT idSkill FROM skilldataset WHERE nameSkill = ?");
                     st.setString(1, skillArray.get(i).getAsString());
@@ -913,21 +956,19 @@ public class Server extends Thread {
 
                 for (int i = 0 ; i<idSkills.length ; i++){
 
-                    st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND experiencia <= ?");
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? AND experiencia <= ? and searchable = ?"); //faz um select no banco de dados para vagas que tenham a skill pesquisada E experiencia menor ou igual a inserida
                     st.setInt(1, idSkills[i]);
                     st.setInt(2, experienciaSearch);
+                    st.setBoolean(3,true);
                     rs = st.executeQuery();
 
-                    while (rs.next()) {
+                    while (rs.next()) { //mesmo processo de insersão no array igual as outras pesquisas
                         st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
                         st.setInt(1, rs.getInt("idSkillDataset"));
 
                         rs2 = st.executeQuery();
                         if (rs2.next()) {
                             nameSkill = rs2.getString("nameSkill");
-                        }
-                        else {
-                            nameSkill = "";
                         }
 
                         experiencia = rs.getString("experiencia");
@@ -942,7 +983,7 @@ public class Server extends Thread {
                     }
                 }
             }
-            else if(data.get("filter").getAsString().equals("OR")){
+            else if(data.get("filter").getAsString().equals("OR")){ // se o filtro for OU
 
                 JsonArray skillArray = data.get("skill").getAsJsonArray();
                 int experienciaSearch = data.get("experience").getAsInt();
@@ -960,11 +1001,11 @@ public class Server extends Thread {
                 }
 
 
-                for (int i = 0 ; i<idSkills.length ; i++){
+                for (int i = 0 ; i<idSkills.length ; i++){ //a pesquisa aqui é separada, pois como se trata de um OU incluir os dois no mesmo select poderia incluir vagas duplicadas quando fosse pesquisada duas skills
 
-                    st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? OR experiencia <= ?");
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idSkillDataset = ? and searchable = ?");
                     st.setInt(1, idSkills[i]);
-                    st.setInt(2, experienciaSearch);
+                    st.setBoolean(2,true);
                     rs = st.executeQuery();
 
                     while (rs.next()) {
@@ -974,9 +1015,6 @@ public class Server extends Thread {
                         rs2 = st.executeQuery();
                         if (rs2.next()) {
                             nameSkill = rs2.getString("nameSkill");
-                        }
-                        else {
-                            nameSkill = "";
                         }
 
                         experiencia = rs.getString("experiencia");
@@ -990,6 +1028,48 @@ public class Server extends Thread {
 
                     }
                 }
+
+                boolean isPresent = false;
+
+                st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE experiencia <= ? and searchable = ?");
+                st.setInt(1, experienciaSearch);
+                st.setBoolean(2,true);
+
+                rs = st.executeQuery();
+
+                while (rs.next()) {
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                    st.setInt(1, rs.getInt("idSkillDataset"));
+
+                    rs2 = st.executeQuery();
+                    if (rs2.next()) {
+                        nameSkill = rs2.getString("nameSkill");
+                    }
+
+                    experiencia = rs.getString("experiencia");
+                    idJob = rs.getString("idJob");
+
+
+                    for (int i = 0; i < jobArray.size(); i++) {
+                        JsonObject jsonObject = jobArray.get(i).getAsJsonObject();
+                        if (jsonObject.get("id").getAsString().equals(idJob)) {
+                            isPresent = true;
+                            break;
+                        }
+                        isPresent = false;
+                    }
+
+                    if(!isPresent) {
+                        var jobObject = new JsonObject();
+                        jobObject.addProperty("skill", nameSkill);
+                        jobObject.addProperty("experience", experiencia);
+                        jobObject.addProperty("id", idJob);
+                        jobArray.add(jobObject);
+                    }
+
+                }
+
+
             }
         }
 
@@ -1000,11 +1080,17 @@ public class Server extends Thread {
         responseJson.add("data",data);
         logWriter("Server",JsonUtils.toJsonString(responseJson));
         out.println(JsonUtils.toJsonString(responseJson));
-        return;
     }
 
     private void IncludeJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if ((dataJson.get("skill").getAsString() == null || dataJson.get("skill").getAsString().isEmpty() ) || (dataJson.get("experience").getAsString() == null || dataJson.get("experience").getAsString().isEmpty() || !dataJson.get("experience").getAsString().matches("[0-9]+"))){
+            JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
 
         String token = requestJson.get("token").getAsString();
         String skill = dataJson.get("skill").getAsString();
@@ -1022,10 +1108,12 @@ public class Server extends Thread {
         if (rs.next()) { //Verificação de Existência da Skill
             int skillId = Integer.parseInt(rs.getString("idSkill"));
 
-            st = Conexao.getConexao().prepareStatement("INSERT INTO JOBS (idRecruiter,idSkillDataset,experiencia) VALUES (?, ?, ?)");
+            st = Conexao.getConexao().prepareStatement("INSERT INTO JOBS (idRecruiter,idSkillDataset,experiencia,searchable,available) VALUES (?, ?, ?, ?, ?)");
             st.setInt(1, recruiterId);
             st.setInt(2, skillId);
             st.setInt(3, experience);
+            st.setBoolean(4,true);
+            st.setBoolean(5,true);
             st.executeUpdate();
 
             JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "SUCCESS", "");
@@ -1046,6 +1134,14 @@ public class Server extends Thread {
 
     private void LookupJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if (dataJson.get("id").getAsString() == null || dataJson.get("id").getAsString().isEmpty() || !dataJson.get("id").getAsString().matches("[0-9]+")) {
+            JsonObject responseJson = JsonUtils.createResponse("LOOKUP_JOB", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
         int id = dataJson.get("id").getAsInt();
 
         String token = requestJson.get("token").getAsString();
@@ -1096,6 +1192,14 @@ public class Server extends Thread {
 
     private void DeleteJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if (dataJson.get("id").getAsString() == null || dataJson.get("id").getAsString().isEmpty() || !dataJson.get("id").getAsString().matches("[0-9]+")) {
+            JsonObject responseJson = JsonUtils.createResponse("DELETE_JOB", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
         int id = dataJson.get("id").getAsInt();
 
         String token = requestJson.get("token").getAsString();
@@ -1132,6 +1236,14 @@ public class Server extends Thread {
 
     private void UpdateJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if (dataJson.get("id").getAsString() == null || dataJson.get("id").getAsString().isEmpty() || !dataJson.get("id").getAsString().matches("[0-9]+") || (dataJson.get("skill").getAsString() == null || dataJson.get("skill").getAsString().isEmpty()) || (dataJson.get("experience").getAsString() == null || dataJson.get("experience").getAsString().isEmpty() || !dataJson.get("experience").getAsString().matches("[0-9]+"))) {
+            JsonObject responseJson = JsonUtils.createResponse("UPDATE_JOB", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
         int id = dataJson.get("id").getAsInt();
         String skill = dataJson.get("skill").getAsString();
         int experiencia = dataJson.get("experience").getAsInt();
@@ -1229,10 +1341,454 @@ public class Server extends Thread {
 
     }
 
+    private void UpdateJobAvaliabityProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if((dataJson.get("id").getAsString().isEmpty() || dataJson.get("id").getAsString() == null || !dataJson.get("id").getAsString().matches("[0-9]+")) || !(dataJson.get("available").getAsString().equals("YES") || dataJson.get("available").getAsString().equals("NO") )){
+            JsonObject responseJson = JsonUtils.createResponse("SET_JOB_AVAILABLE", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
+        String token = requestJson.get("token").getAsString();
+        int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
+        int jobId = dataJson.get("id").getAsInt();
+
+        PreparedStatement st;
+        ResultSet rs;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idJob = ? AND idRecruiter = ?");
+        st.setInt(1, jobId);
+        st.setInt(2, recruiterId);
+        rs = st.executeQuery();
+
+        if (rs.next()) {
+
+            boolean available = dataJson.get("available").getAsString().equals("YES");
+
+            st = Conexao.getConexao().prepareStatement("UPDATE jobs SET  avaliable = ? WHERE idJob = ?");
+            st.setBoolean(1, available);
+            st.setInt(2, jobId);
+            st.executeUpdate();
+
+            JsonObject responseJson = JsonUtils.createResponse("SET_JOB_AVAILABLE", "SUCCESS", "");
+            logWriter("Server", JsonUtils.toJsonString(responseJson));
+            out.println(JsonUtils.toJsonString(responseJson));
+
+            return;
+        }
+        else {
+            JsonObject responseJson = JsonUtils.createResponse("SET_JOB_AVAILABLE", "JOB_NOT_FOUND", "");
+            logWriter("Server", JsonUtils.toJsonString(responseJson));
+            out.println(JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
+
+    }
+
+    private void UpdateJobSearchableProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException{
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if((dataJson.get("id").getAsString().isEmpty() || dataJson.get("id").getAsString() == null || !dataJson.get("id").getAsString().matches("[0-9]+")) || !(dataJson.get("searchable").getAsString().equals("YES") || dataJson.get("searchable").getAsString().equals("NO"))){
+            JsonObject responseJson = JsonUtils.createResponse("SET_JOB_SEARCHABLE", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
+        String token = requestJson.get("token").getAsString();
+        int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
+        int jobId = dataJson.get("id").getAsInt();
+
+        PreparedStatement st;
+        ResultSet rs;
+
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idJob = ? AND idRecruiter = ?");
+        st.setInt(1, jobId);
+        st.setInt(2, recruiterId);
+        rs = st.executeQuery();
+
+        if (rs.next()) {
+
+
+            boolean searchable = dataJson.get("searchable").getAsString().equals("YES");
+
+            st = Conexao.getConexao().prepareStatement("UPDATE jobs SET searchable = ? WHERE idJob = ?");
+            st.setBoolean(1, searchable);
+            st.setInt(2, jobId);
+            st.executeUpdate();
+
+            JsonObject responseJson = JsonUtils.createResponse("SET_JOB_SEARCHABLE", "SUCCESS", "");
+            logWriter("Server", JsonUtils.toJsonString(responseJson));
+            out.println(JsonUtils.toJsonString(responseJson));
+
+        }
+        else {
+            JsonObject responseJson = JsonUtils.createResponse("SET_JOB_SEARCHABLE", "JOB_NOT_FOUND", "");
+            logWriter("Server", JsonUtils.toJsonString(responseJson));
+            out.println(JsonUtils.toJsonString(responseJson));
+        }
+        return;
+
+
+    }
+
+    private void SearchCandidateProcess(PrintWriter out, JsonObject requestJson) throws SQLException, IOException {
+
+
+        String token = requestJson.get("token").getAsString(); //Pega o token do recruiter
+
+        String nameSkill = "",experiencia,idCandidate;
+
+        var candidateArray = new JsonArray(); //Cria a variável da lista de candidatos
+
+        JsonObject data = requestJson.get("data").getAsJsonObject();
+
+        if(data.has("skill")){
+            if(data.get("skill").getAsString() == null || data.get("skill").getAsString().isEmpty()){
+                JsonObject responseJson = JsonUtils.createResponse("SEARCH_CANDIDATE", "INVALID_FIELD", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+            }
+        }
+        if(data.has("experience")){
+            if((data.get("experience").getAsString() == null || data.get("experience").getAsString().isEmpty() || !data.get("experience").getAsString().matches("[0-9]+"))){
+                JsonObject responseJson = JsonUtils.createResponse("SEARCH_CANDIDATE", "INVALID_FIELD", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+            }
+        }
+        if(data.has("filter")){
+            if((data.get("filter").getAsString() == null || data.get("filter").getAsString().isEmpty()) || !(data.get("filter").getAsString().equals("AND") || data.get("filter").getAsString().equals("OR"))){
+                JsonObject responseJson = JsonUtils.createResponse("SEARCH_CANDIDATE", "INVALID_FIELD", "");
+                out.println(JsonUtils.toJsonString(responseJson));
+                logWriter("Server",JsonUtils.toJsonString(responseJson));
+                return;
+            }
+        }
+
+        PreparedStatement st;
+        ResultSet rs,rs2;
+
+        if(!data.has("skill")){ //Se o JSON não possuir o campo skill, então a busca é por experiência
+
+            int experienciaSearch = data.get("experience").getAsInt();
+
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE experiencia <= ?"); //faz um select no banco de dados para os candidatos com experencia menor ou igual a selecionada
+            st.setInt(1, experienciaSearch);
+            rs = st.executeQuery();
+
+            while (rs.next()) { // enquanto houver um resultado na busca feita
+                st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                st.setInt(1, rs.getInt("idSkillDataset")); //Pegar o nome da skill
+
+                rs2 = st.executeQuery();
+                if (rs2.next()) {
+                    nameSkill = rs2.getString("nameSkill");
+                }
+
+                experiencia = rs.getString("experiencia");
+                idCandidate = rs.getString("idCandidate");
+
+                var jobObject = new JsonObject();
+                jobObject.addProperty("skill", nameSkill);
+                jobObject.addProperty("experience", experiencia);
+                jobObject.addProperty("id", idCandidate);
+                candidateArray.add(jobObject); // adicionar no array de candidatos
+
+            }
+        }
+        else if (!data.has("experience")) { // se o json conter o campo "skill mas" não conter o campo "experience" então a busca é por skills
+            JsonArray skillArray = data.get("skill").getAsJsonArray(); //recebe o array de skills pesquisadas
+            int [] idSkills = new int[skillArray.size()]; //vetor que guarda os ids das skills
+            for(int i = 0 ; i<skillArray.size() ; i++){
+                st = Conexao.getConexao().prepareStatement("SELECT idSkill FROM skilldataset WHERE nameSkill = ?");
+                st.setString(1, skillArray.get(i).getAsString());
+
+
+                rs = st.executeQuery();
+
+                if (rs.next()) {
+                    idSkills[i] = rs.getInt("idSkill");
+                };
+
+            }
+
+
+            for (int i = 0 ; i<idSkills.length ; i++){ //for para pesquisar vagas na quantidade que foi pesquisada
+
+                st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE idSkillDataset = ?"); //faz um select no banco de dados para as vagas que tenham o id da vaga pesquiada
+                st.setInt(1, idSkills[i]);
+                rs = st.executeQuery();
+
+                while (rs.next()) { //mesmo processo da busca por experiencia
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                    st.setInt(1, rs.getInt("idSkillDataset"));
+
+                    rs2 = st.executeQuery();
+                    if (rs2.next()) {
+                        nameSkill = rs2.getString("nameSkill");
+                    }
+
+                    experiencia = rs.getString("experiencia");
+                    idCandidate = rs.getString("idCandidate");
+
+                    var jobObject = new JsonObject();
+                    jobObject.addProperty("skill", nameSkill);
+                    jobObject.addProperty("experience", experiencia);
+                    jobObject.addProperty("id", idCandidate);
+                    candidateArray.add(jobObject);
+
+                }
+            }
+        }
+        else { //se o json possuir os campos "skill" e "experience"
+            if(data.get("filter").getAsString().equals("AND")){ //se o filtro for E
+
+                JsonArray skillArray = data.get("skill").getAsJsonArray();
+                int experienciaSearch = data.get("experience").getAsInt();
+                int [] idSkills = new int[skillArray.size()];
+
+                for(int i = 0 ; i<skillArray.size() ; i++){
+                    st = Conexao.getConexao().prepareStatement("SELECT idSkill FROM skilldataset WHERE nameSkill = ?");
+                    st.setString(1, skillArray.get(i).getAsString());
+
+                    rs = st.executeQuery();
+
+                    if (rs.next()) {
+                        idSkills[i] = rs.getInt("idSkill");
+                    };
+
+                }
+
+
+                for (int i = 0 ; i<idSkills.length ; i++){
+
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE idSkillDataset = ? AND experiencia <= ?"); //faz um select no banco de dados para vagas que tenham a skill pesquisada E experiencia menor ou igual a inserida
+                    st.setInt(1, idSkills[i]);
+                    st.setInt(2, experienciaSearch);
+                    rs = st.executeQuery();
+
+                    while (rs.next()) { //mesmo processo de insersão no array igual as outras pesquisas
+                        st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                        st.setInt(1, rs.getInt("idSkillDataset"));
+
+                        rs2 = st.executeQuery();
+                        if (rs2.next()) {
+                            nameSkill = rs2.getString("nameSkill");
+                        }
+
+                        experiencia = rs.getString("experiencia");
+                        idCandidate = rs.getString("idCandidate");
+
+                        var jobObject = new JsonObject();
+                        jobObject.addProperty("skill", nameSkill);
+                        jobObject.addProperty("experience", experiencia);
+                        jobObject.addProperty("id", idCandidate);
+                        candidateArray.add(jobObject);
+
+                    }
+                }
+            }
+            else if(data.get("filter").getAsString().equals("OR")){ // se o filtro for OU
+
+                JsonArray skillArray = data.get("skill").getAsJsonArray();
+                int experienciaSearch = data.get("experience").getAsInt();
+                int [] idSkills = new int[skillArray.size()];
+                for(int i = 0 ; i<skillArray.size() ; i++){
+                    st = Conexao.getConexao().prepareStatement("SELECT idSkill FROM skilldataset WHERE nameSkill = ?");
+                    st.setString(1, skillArray.get(i).getAsString());
+
+                    rs = st.executeQuery();
+
+                    if (rs.next()) {
+                        idSkills[i] = rs.getInt("idSkill");
+                    };
+
+                }
+
+
+                for (int i = 0 ; i<idSkills.length ; i++){ //a pesquisa aqui é separada, pois como se trata de um OU incluir os dois no mesmo select poderia incluir vagas duplicadas quando fosse pesquisada duas skills
+
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE idSkillDataset = ?");
+                    st.setInt(1, idSkills[i]);
+                    rs = st.executeQuery();
+
+                    while (rs.next()) {
+                        st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                        st.setInt(1, rs.getInt("idSkillDataset"));
+
+                        rs2 = st.executeQuery();
+                        if (rs2.next()) {
+                            nameSkill = rs2.getString("nameSkill");
+                        }
+
+                        experiencia = rs.getString("experiencia");
+                        idCandidate = rs.getString("idCandidate");
+
+                        var jobObject = new JsonObject();
+                        jobObject.addProperty("skill", nameSkill);
+                        jobObject.addProperty("experience", experiencia);
+                        jobObject.addProperty("id", idCandidate);
+                        candidateArray.add(jobObject);
+
+                    }
+                }
+
+                boolean isPresent = false;
+
+                st = Conexao.getConexao().prepareStatement("SELECT * FROM skills WHERE experiencia <= ?");
+                st.setInt(1, experienciaSearch);
+
+                rs = st.executeQuery();
+
+                while (rs.next()) {
+                    st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
+                    st.setInt(1, rs.getInt("idSkillDataset"));
+
+                    rs2 = st.executeQuery();
+                    if (rs2.next()) {
+                        nameSkill = rs2.getString("nameSkill");
+                    }
+
+                    experiencia = rs.getString("experiencia");
+                    idCandidate = rs.getString("idCandidate");
+
+
+                    for (int i = 0; i < candidateArray.size(); i++) {
+                        JsonObject jsonObject = candidateArray.get(i).getAsJsonObject();
+                        if (jsonObject.get("id").getAsString().equals(idCandidate) && jsonObject.get("experience").getAsString().equals(experiencia)) {
+                            isPresent = true;
+                            break;
+                        }
+                        isPresent = false;
+                    }
+
+                    if(!isPresent) {
+                        var jobObject = new JsonObject();
+                        jobObject.addProperty("skill", nameSkill);
+                        jobObject.addProperty("experience", experiencia);
+                        jobObject.addProperty("id", idCandidate);
+                        candidateArray.add(jobObject);
+                    }
+
+                }
+
+
+            }
+        }
+
+        data.addProperty("profile_size", candidateArray.size());
+        data.add("profile", candidateArray);
+
+        JsonObject responseJson = JsonUtils.createResponse("SEARCH_CANDIDATE", "SUCCESS", "");
+        responseJson.add("data",data);
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+    }
+
+    private void ChooseCandidateProcess(PrintWriter out, JsonObject requestJson) throws SQLException, IOException {
+
+        String token = requestJson.get("token").getAsString();
+        JsonObject dataJson = requestJson.get("data").getAsJsonObject();
+
+        if (dataJson.get("id").getAsString() == null || dataJson.get("id").getAsString().isEmpty() || !dataJson.get("id").getAsString().matches("[0-9]+")) {
+            JsonObject responseJson = JsonUtils.createResponse("CHOOSE_CANDIDATE", "INVALID_FIELD", "");
+            out.println(JsonUtils.toJsonString(responseJson));
+            logWriter("Server",JsonUtils.toJsonString(responseJson));
+            return;
+        }
+
+        JsonObject responseJson;
+        int idRecruiter = JsonUtils.JWTValidator.getIdClaim(token);
+        int idCandidate = dataJson.get("id").getAsInt();
+
+        PreparedStatement st;
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM candidate WHERE id = ?");
+        st.setInt(1, idCandidate);
+
+        ResultSet rs;
+        rs = st.executeQuery();
+
+        if (rs.next()) {
+            st = Conexao.getConexao().prepareStatement("INSERT INTO messages (idRecruiter, idCandidate) VALUES (?, ?)");
+            st.setInt(1,idRecruiter);
+            st.setInt(2,idCandidate);
+            st.executeUpdate();
+            responseJson = JsonUtils.createResponse("CHOOSE_CANDIDATE", "SUCCESS", "");
+        }
+        else {
+            responseJson = JsonUtils.createResponse("CHOOSE_CANDIDATE", "CANDIDATE_NOT_FOUND", "");
+        }
+
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+
+    }
+
+    private void GetMessagesProcess(PrintWriter out, JsonObject requestJson) throws SQLException, IOException {
+        String token = requestJson.get("token").getAsString();
+        int idCandidate = JsonUtils.JWTValidator.getIdClaim(token);
+
+        String nameRecruiter,industry,email,description;
+
+
+        var companyArray = new JsonArray();
+
+        PreparedStatement st;
+        ResultSet rs,rs2;
+
+        st = Conexao.getConexao().prepareStatement("SELECT idRecruiter FROM messages WHERE idCandidate = ?");
+        st.setInt(1, idCandidate);
+        rs = st.executeQuery();
+
+        while (rs.next()) {
+            int idRecruiter = rs.getInt("idRecruiter");
+
+            st = Conexao.getConexao().prepareStatement("SELECT * FROM recruiter WHERE id = ?");
+            st.setInt(1,idRecruiter);
+
+            rs2 = st.executeQuery();
+
+            rs2.next();
+
+            nameRecruiter = rs2.getString("nome");
+            industry = rs2.getString("industry");
+            email = rs2.getString("email");
+            description = rs2.getString("description");
+
+            /*if (rs.next()){
+                rs.
+            }*/
+
+            var companyObject = new JsonObject();
+            companyObject.addProperty("name", nameRecruiter);
+            companyObject.addProperty("industry", industry);
+            companyObject.addProperty("email", email);
+            companyObject.addProperty("description", description);
+            companyArray.add(companyObject);
+
+        }
+
+        JsonObject data = new JsonObject();
+        data.addProperty("company_size", companyArray.size());
+        data.add("company", companyArray);
+
+        JsonObject responseJson = JsonUtils.createResponse("GET_COMPANY", "SUCCESS", "");
+        responseJson.add("data",data);
+        logWriter("Server",JsonUtils.toJsonString(responseJson));
+        out.println(JsonUtils.toJsonString(responseJson));
+        return;
+
+    }
+
     private void logWriter(String menssager, String message) throws IOException {
         System.out.println(menssager + ": " + message);
     }
-
 
     public static void main(String[] args) {
         int serverPort = 21234;

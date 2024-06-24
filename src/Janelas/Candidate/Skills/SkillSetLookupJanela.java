@@ -18,13 +18,13 @@ public class SkillSetLookupJanela extends JFrame {
     private JButton button_lookup;
     private JButton voltarButton;
     private JScrollPane skillsetPane;
-    DefaultListModel<Skills> model = new DefaultListModel();
+    private DefaultListModel<Skills> model = new DefaultListModel();
     private JList<Skills> skillsetList;
     private JLabel skillsetLabel;
 
 
 
-    public SkillSetLookupJanela(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public SkillSetLookupJanela(PrintWriter out, BufferedReader in, String token) {
         setContentPane(panel1);
         setTitle("Janela Lookup Skillset");
         setSize(500, 500);
@@ -37,15 +37,12 @@ public class SkillSetLookupJanela extends JFrame {
                 model.clear();
                 skillsetList.setModel(model);
                 try {
-                    List<Skills> skillSet = skillSet = SkillSetLookup.LookupSkillSetProcess(reader,out,in,token);
+                    List<Skills> skillSet = SkillSetLookup.LookupSkillSetProcess(out,in,token);
 
                     for (int i = 0; i < skillSet.size(); i++) {
                         model.addElement(skillSet.get(i));
-
                     }
                     skillsetList.setModel(model);
-                    //panel1.add(jScrollPane);
-                    //jScrollPane.setVisible(true);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -54,7 +51,7 @@ public class SkillSetLookupJanela extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuSkills(reader,out,in,token);
+                new MenuSkills(out,in,token);
                 setVisible(false);
             }
         });

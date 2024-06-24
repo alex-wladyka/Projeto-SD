@@ -16,7 +16,7 @@ public class MenuLogin extends JFrame {
     private JButton signUpButton;
     private JButton voltarButton;
 
-    public MenuLogin(int role, BufferedReader reader, PrintWriter out, BufferedReader in) {
+    public MenuLogin(int role, PrintWriter out, BufferedReader in) {
 
         setContentPane(panel1);
         setTitle("Janela Menu Login");
@@ -28,7 +28,7 @@ public class MenuLogin extends JFrame {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new JanelaLogin(role, reader, out, in);
+                new JanelaLogin(role,out, in);
                 setVisible(false);
             }
         });
@@ -36,11 +36,11 @@ public class MenuLogin extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (role == 0){
-                    new JanelaSignupCandidato(reader, out, in);
+                    new JanelaSignupCandidato(out, in);
                     setVisible(false);
                 }
                 else{
-                    new JanelaSignupRecruiter(reader, out, in);
+                    new JanelaSignupRecruiter(out, in);
                     setVisible(false);
                 }
             }
@@ -48,7 +48,7 @@ public class MenuLogin extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuRole(reader,out,in);
+                new MenuRole(out,in);
                 setVisible(false);
             }
         });

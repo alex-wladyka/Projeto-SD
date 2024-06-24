@@ -9,9 +9,7 @@ import com.google.gson.JsonObject;
 
 
 public class CandidateUpdate {
-    public static String updateProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String email, String password, String name) throws IOException {
-
-
+    public static String updateProcess(PrintWriter out, BufferedReader in, String token, String email, String password, String name) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("UPDATE_ACCOUNT_CANDIDATE");
         jsonRequest.addProperty("token", token);
@@ -30,17 +28,6 @@ public class CandidateUpdate {
 
         return responseJson.get("status").getAsString();
 
-        /*switch (status) {
-            case "SUCCESS":
-
-                return;
-            case "INVALID_EMAIL":
-
-                break;
-            default:
-
-                break;
-        }*/
 
     }
 }

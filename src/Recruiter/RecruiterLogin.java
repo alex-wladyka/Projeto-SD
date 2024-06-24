@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 
 public class RecruiterLogin {
 
-    public static String LoginProcess (BufferedReader reader, PrintWriter out, BufferedReader in, String email, String password) throws IOException {
+    public static String LoginProcess (PrintWriter out, BufferedReader in, String email, String password) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("LOGIN_RECRUITER");
         JsonObject data = new JsonObject();

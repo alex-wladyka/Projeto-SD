@@ -25,9 +25,9 @@ public class SearchJobjanela extends JFrame{
     private JButton voltarButton;
     private JButton buscarButton;
     DefaultListModel<Jobs> model = new DefaultListModel();
-    String filter= null;
+    String filter = null;
 
-    public SearchJobjanela(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public SearchJobjanela(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Buscar Vagas");
@@ -35,16 +35,12 @@ public class SearchJobjanela extends JFrame{
         setLocationRelativeTo(null);
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        conditionExperience.setVisible(false);
 
         comboBox1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (comboBox1.getSelectedIndex() == 0) {
-                    condition.setVisible(true);
-                }
-                else {
-                    condition.setVisible(false);
-                }
+                condition.setVisible(comboBox1.getSelectedIndex() == 0);
             }
         });
 
@@ -60,7 +56,6 @@ public class SearchJobjanela extends JFrame{
                     }
                 }
                 else {
-                    System.out.println("AAAaaaa");
                     conditionExperience.setVisible(false);
                 }
             }
@@ -69,7 +64,11 @@ public class SearchJobjanela extends JFrame{
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuPrincipalCandidato(reader,out,in,token);
+                try {
+                    new MenuPrincipalCandidato(out,in,token);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
                 setVisible(false);
             }
         });
@@ -82,14 +81,14 @@ public class SearchJobjanela extends JFrame{
                 if(condition.isVisible()){ //Vaga Selecionada
                     if(conditionExperience.isVisible()){ //Condição selecionadas
                         try {
-                            jobSet = SearchJob_All.SearchJobAllProcess(reader,out,in,token,skillExpField.getText(),expField.getText(),filter);
+                            jobSet = SearchJob_All.SearchJobAllProcess(out,in,token,skillExpField.getText(),expField.getText(),filter);
                         } catch (IOException ex) {
                             throw new RuntimeException(ex);
                         }
                     }
                     else {
                         try {
-                            jobSet = SearchJob_Skill.SearchJob_Skill(reader,out,in,token,skillExpField.getText());
+                            jobSet = SearchJob_Skill.SearchJob_Skill(out,in,token,skillExpField.getText());
                         } catch (IOException ex) {
                             throw new RuntimeException(ex);
                         }
@@ -97,7 +96,7 @@ public class SearchJobjanela extends JFrame{
                 }
                 else {
                     try {
-                        jobSet = SearchJob_Experience.SearchJobExperienceProcess(reader,out,in,token,skillExpField.getText());
+                        jobSet = SearchJob_Experience.SearchJobExperienceProcess(out,in,token,skillExpField.getText());
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }

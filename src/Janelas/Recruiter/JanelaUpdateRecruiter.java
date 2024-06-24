@@ -19,7 +19,7 @@ public class JanelaUpdateRecruiter extends JFrame {
     private JButton continuarButton;
     private JButton voltarButton;
 
-    public JanelaUpdateRecruiter(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public JanelaUpdateRecruiter(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Janela Update Recruiter");
@@ -32,12 +32,12 @@ public class JanelaUpdateRecruiter extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String status = RecruiterUpdate.updateProcess(reader,out,in,token,emailField.getText(),senhaField.getText(),nomeField.getText(),industryField.getText(),descricaoField.getText());
+                    String status = RecruiterUpdate.updateProcess(out,in,token,emailField.getText(),senhaField.getText(),nomeField.getText(),industryField.getText(),descricaoField.getText());
 
                     switch (status) {
                         case "SUCCESS":
                             JOptionPane.showMessageDialog(null, "Dados Alterados com Sucesso!", "Sucesso", JOptionPane.PLAIN_MESSAGE);
-                            new MenuPrincipalRecruiter(reader,out,in,token);
+                            new MenuPrincipalRecruiter(out,in,token);
                             setVisible(false);
                             break;
                         case "INVALID_EMAIL":
@@ -57,7 +57,7 @@ public class JanelaUpdateRecruiter extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuPrincipalRecruiter(reader, out, in, token);
+                new MenuPrincipalRecruiter(out, in, token);
                 setVisible(false);
             }
         });

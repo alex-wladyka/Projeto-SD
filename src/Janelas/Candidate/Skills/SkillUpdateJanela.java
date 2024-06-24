@@ -17,7 +17,7 @@ public class SkillUpdateJanela extends JFrame{
     private JButton atualizarButton;
     private JTextField skillAtualField;
 
-    public SkillUpdateJanela(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public SkillUpdateJanela(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Janela Update Skills");
@@ -30,12 +30,12 @@ public class SkillUpdateJanela extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String status = SkillUpdate.IUpdateSkillProcess(reader,out,in,token,skillAtualField.getText(),novaSkillField.getText(),experienceSpinner.getValue().toString());
+                    String status = SkillUpdate.IUpdateSkillProcess(out,in,token,skillAtualField.getText(),novaSkillField.getText(),experienceSpinner.getValue().toString());
 
                     switch(status){
                         case "SUCCESS":
                             JOptionPane.showMessageDialog(null,"A skill foi alterada com sucesso");
-                            new MenuSkills(reader, out, in, token);
+                            new MenuSkills(out, in, token);
                             setVisible(false);
                             break;
                         case "SKILL_NOT_FOUND":
@@ -57,7 +57,7 @@ public class SkillUpdateJanela extends JFrame{
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuSkills(reader, out, in, token);
+                new MenuSkills(out, in, token);
                 setVisible(false);
             }
         });

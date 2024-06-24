@@ -15,7 +15,7 @@ public class JobDeleteJanela extends JFrame {
     private JButton deletarButton;
     private JButton voltarButton;
 
-    public JobDeleteJanela(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public JobDeleteJanela(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Janela Delete Jobs");
@@ -28,7 +28,7 @@ public class JobDeleteJanela extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String status = JobDelete.deleteProcess(reader,out,in,token,IDField.getText());
+                    String status = JobDelete.deleteProcess(out,in,token,IDField.getText());
 
                     switch(status){
                         case "SUCCESS":
@@ -51,7 +51,7 @@ public class JobDeleteJanela extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuJobs(reader,out,in,token);
+                new MenuJobs(out,in,token);
                 setVisible(false);
             }
         });

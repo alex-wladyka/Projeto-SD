@@ -17,7 +17,7 @@ public class MenuJobs extends JFrame {
     private JButton buscarJobButton;
     private JButton voltarButton;
 
-    public MenuJobs(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public MenuJobs(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Janela Menu Jobs");
@@ -29,42 +29,42 @@ public class MenuJobs extends JFrame {
         cadastrarJobButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new CadastroJobs(reader, out, in, token);
+                new CadastroJobs(out, in, token);
                 setVisible(false);
             }
         });
         buscarJobButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new JobLookupJanela(reader, out, in, token);
+                new JobLookupJanela(out, in, token);
                 setVisible(false);
             }
         });
         verificarJobSetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new LookupJobset_Janela(reader, out, in, token);
+                new LookupJobset_Janela(out, in, token);
                 setVisible(false);
             }
         });
         modificarJobButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new JobUpdateJanela(reader, out, in, token);
+                new MenuUpdateJobs(out, in, token);
                 setVisible(false);
             }
         });
         deletarJobButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new JobDeleteJanela(reader, out, in, token);
+                new JobDeleteJanela(out, in, token);
                 setVisible(false);
             }
         });
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuPrincipalRecruiter(reader, out, in, token);
+                new MenuPrincipalRecruiter(out, in, token);
                 setVisible(false);
             }
         });

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SkillSetLookup {
-    public static List<Skills> LookupSkillSetProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token) throws IOException {
+    public static List<Skills> LookupSkillSetProcess(PrintWriter out, BufferedReader in, String token) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("LOOKUP_SKILLSET");
         jsonRequest.addProperty("token", token);

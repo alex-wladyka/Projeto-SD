@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SearchJob_Skill {
-    public static List<Jobs> SearchJob_Skill(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String skill) throws IOException {
+    public static List<Jobs> SearchJob_Skill(PrintWriter out, BufferedReader in, String token, String skill) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("SEARCH_JOB");
         jsonRequest.addProperty("token", token);

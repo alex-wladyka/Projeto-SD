@@ -36,15 +36,17 @@
     VALUES ('NodeJs'),('JavaScript'),('Java'),('C'),('HTML'),('CSS'),('React'),('ReactNative'),('TypeScript'),('Ruby');
     
     
-CREATE TABLE IF NOT EXISTS jobs(
-idJob int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-idRecruiter int NOT NULL,
-idSkillDataset int NOT NULL,
-experiencia int,
-FOREIGN KEY (idRecruiter) REFERENCES recruiter(id),
-FOREIGN KEY (idSkillDataset) REFERENCES skillDataset(idSkill)
-)
-    
+	CREATE TABLE IF NOT EXISTS jobs(
+	idJob int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	idRecruiter int NOT NULL,
+	idSkillDataset int NOT NULL,
+	experiencia int,
+    avaliable boolean,
+    searchable boolean,
+	FOREIGN KEY (idRecruiter) REFERENCES recruiter(id),
+	FOREIGN KEY (idSkillDataset) REFERENCES skillDataset(idSkill)
+	);
+
     
     
     

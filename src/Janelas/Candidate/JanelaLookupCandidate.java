@@ -21,9 +21,9 @@ public class JanelaLookupCandidate extends JFrame {
     private static String nome;
 
 
-    public JanelaLookupCandidate(BufferedReader reader, PrintWriter out, BufferedReader in, String token) throws IOException {
+    public JanelaLookupCandidate(PrintWriter out, BufferedReader in, String token) throws IOException {
 
-        CandidateLookup.LookupProcess(reader,out,in,token);
+        CandidateLookup.LookupProcess(out,in,token);
 
         setContentPane(panel1);
         setTitle("Janela Lookup Candidate");
@@ -40,7 +40,11 @@ public class JanelaLookupCandidate extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuPrincipalCandidato(reader,out,in,token);
+                try {
+                    new MenuPrincipalCandidato(out,in,token);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
                 setVisible(false);
             }
         });

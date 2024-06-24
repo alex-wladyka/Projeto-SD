@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 
 public class RecruiterDelete {
 
-    public static void deleteProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token) throws IOException {
+    public static void deleteProcess(PrintWriter out, BufferedReader in, String token) throws IOException {
 
         JsonObject requestJson = JsonUtils.createRequest("DELETE_ACCOUNT_RECRUITER");
         requestJson.addProperty("token", token);

@@ -2,8 +2,10 @@ package Janelas.Candidate;
 
 import Candidate.CandidateDelete;
 import Candidate.CandidateLogout;
+import Candidate.GetMessages;
 import Janelas.Candidate.Skills.MenuSkills;
 import Janelas.MenuRole;
+import Recruiter.Recruiter;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -11,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 public class MenuPrincipalCandidato extends JFrame {
     private JPanel panel1;
@@ -20,9 +23,16 @@ public class MenuPrincipalCandidato extends JFrame {
     private JButton skillsButton;
     private JButton logoutButton;
     private JButton buscarVagasButton;
+    private JButton verMensagensButton;
 
 
-    public MenuPrincipalCandidato(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public MenuPrincipalCandidato(PrintWriter out, BufferedReader in, String token) throws IOException {
+
+        List<Recruiter> companySet = GetMessages.GetMessagesProcess(out, in, token);
+
+        if (!companySet.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Você tem novas Mensagens","Aviso",JOptionPane.INFORMATION_MESSAGE);
+        }
 
         setContentPane(panel1);
         setTitle("Menu Principal");
@@ -36,7 +46,7 @@ public class MenuPrincipalCandidato extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     String newToken = CandidateLogout.logoutProcess(out,in,token);
-                    new MenuRole(reader,out,in);
+                    new MenuRole(out,in);
                     setVisible(false);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
@@ -47,7 +57,7 @@ public class MenuPrincipalCandidato extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new JanelaLookupCandidate(reader,out,in,token);
+                    new JanelaLookupCandidate(out,in,token);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -57,7 +67,7 @@ public class MenuPrincipalCandidato extends JFrame {
         atualizarDadosDeCadastroButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new JanelaUpdateCandidato(reader, out, in, token);
+                new JanelaUpdateCandidato(out, in, token);
                 setVisible(false);
             }
         });
@@ -65,9 +75,9 @@ public class MenuPrincipalCandidato extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    CandidateDelete.deleteProcess(reader,out,in,token);
+                    CandidateDelete.deleteProcess(out,in,token);
                     JOptionPane.showMessageDialog(null,"Dados excluidos com sucesso");
-                    new MenuRole(reader,out,in);
+                    new MenuRole(out,in);
                     setVisible(false);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
@@ -77,14 +87,21 @@ public class MenuPrincipalCandidato extends JFrame {
         skillsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuSkills(reader, out, in, token);
+                new MenuSkills(out, in, token);
                 setVisible(false);
             }
         });
         buscarVagasButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new SearchJobjanela(reader, out, in, token);
+                new SearchJobjanela(out, in, token);
+                setVisible(false);
+            }
+        });
+        verMensagensButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new VerificarMensagensJanela(out, in, token);
                 setVisible(false);
             }
         });

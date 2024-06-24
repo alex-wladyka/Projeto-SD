@@ -20,7 +20,7 @@ public class JanelaLogin extends JFrame {
     private JButton voltarButton;
     private JPasswordField passwordField;
 
-    public JanelaLogin(int role, BufferedReader reader, PrintWriter out, BufferedReader in) {
+    public JanelaLogin(int role, PrintWriter out, BufferedReader in) {
         setContentPane(panel1);
         setTitle("Janela Login");
         setSize(500, 500);
@@ -35,12 +35,12 @@ public class JanelaLogin extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if(role == 0){
                     try {
-                        String tokenLogin = CandidateLogin.LoginProcess(reader, out, in, emailField.getText(), passwordField.getText());
+                        String tokenLogin = CandidateLogin.LoginProcess(out, in, emailField.getText(), passwordField.getText());
                         if(tokenLogin == null){
                             JOptionPane.showMessageDialog(null, "Email ou senha incorretos","Aviso",JOptionPane.WARNING_MESSAGE);
                         }
                         else {
-                            new MenuPrincipalCandidato(reader, out, in, tokenLogin);
+                            new MenuPrincipalCandidato(out, in, tokenLogin);
                             setVisible(false);
                         }
                     } catch (IOException ex) {
@@ -49,12 +49,12 @@ public class JanelaLogin extends JFrame {
                 }
                 else {
                     try {
-                        String tokenLogin = RecruiterLogin.LoginProcess(reader, out, in, emailField.getText(), passwordField.getText());
+                        String tokenLogin = RecruiterLogin.LoginProcess(out, in, emailField.getText(), passwordField.getText());
                         if(tokenLogin == null){
                             JOptionPane.showMessageDialog(null, "Email ou senha incorretos","Aviso",JOptionPane.WARNING_MESSAGE);
                         }
                         else {
-                            new MenuPrincipalRecruiter(reader, out, in, tokenLogin);
+                            new MenuPrincipalRecruiter(out, in, tokenLogin);
                             setVisible(false);
                         }
                     } catch (IOException ex) {
@@ -66,7 +66,7 @@ public class JanelaLogin extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuLogin(role, reader, out, in);
+                new MenuLogin(role, out, in);
                 setVisible(false);
             }
         });

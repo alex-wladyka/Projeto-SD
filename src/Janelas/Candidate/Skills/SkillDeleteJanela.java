@@ -16,7 +16,7 @@ public class SkillDeleteJanela extends JFrame {
     private JButton voltarButton;
     private JPanel principal;
 
-    public SkillDeleteJanela(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public SkillDeleteJanela(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(principal);
         setTitle("Janela Delete Skills");
@@ -29,7 +29,7 @@ public class SkillDeleteJanela extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String status = SkillDelete.deleteProcess(reader,out,in,token,skillField.getText());
+                    String status = SkillDelete.deleteProcess(out,in,token,skillField.getText());
 
                     switch(status){
                         case "SUCCESS":
@@ -52,7 +52,7 @@ public class SkillDeleteJanela extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuSkills(reader, out, in, token);
+                new MenuSkills(out, in, token);
                 setVisible(false);
             }
         });

@@ -20,8 +20,9 @@ public class MenuPrincipalRecruiter extends JFrame {
     private JButton deletarDadosButton;
     private JButton vagasButton;
     private JButton logoutButton;
+    private JButton buscarCandidatosButton;
 
-    public MenuPrincipalRecruiter(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public MenuPrincipalRecruiter(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Menu Principal");
@@ -34,7 +35,7 @@ public class MenuPrincipalRecruiter extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new JanelaLookupRecruiter(reader,out,in,token);
+                    new JanelaLookupRecruiter(out,in,token);
                     setVisible(false);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
@@ -44,7 +45,7 @@ public class MenuPrincipalRecruiter extends JFrame {
         atualizarDadosDeCadastroButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new JanelaUpdateRecruiter(reader,out,in,token);
+                new JanelaUpdateRecruiter(out,in,token);
                 setVisible(false);
             }
         });
@@ -52,9 +53,9 @@ public class MenuPrincipalRecruiter extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    RecruiterDelete.deleteProcess(reader,out,in,token);
+                    RecruiterDelete.deleteProcess(out,in,token);
                     JOptionPane.showMessageDialog(null,"Dados excluidos com sucesso");
-                    new MenuRole(reader,out,in);
+                    new MenuRole(out,in);
                     setVisible(false);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
@@ -64,7 +65,7 @@ public class MenuPrincipalRecruiter extends JFrame {
         vagasButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuJobs(reader, out, in, token);
+                new MenuJobs(out, in, token);
                 setVisible(false);
             }
         });
@@ -73,11 +74,18 @@ public class MenuPrincipalRecruiter extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     String newToken = RecruiterLogout.logoutProcess(out,in,token);
-                    new MenuRole(reader,out,in);
+                    new MenuRole(out,in);
                     setVisible(false);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
+            }
+        });
+        buscarCandidatosButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new BusarCandidatosJanela(out,in,token);
+                setVisible(false);
             }
         });
     }

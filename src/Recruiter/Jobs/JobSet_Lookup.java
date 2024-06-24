@@ -13,7 +13,7 @@ import java.util.List;
 
 public class JobSet_Lookup {
 
-    public static List<Jobs> LookupJobSetProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token) throws IOException {
+    public static List<Jobs> LookupJobSetProcess(PrintWriter out, BufferedReader in, String token) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("LOOKUP_JOBSET");
         jsonRequest.addProperty("token", token);

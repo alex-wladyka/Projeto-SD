@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 
 public class RecruiterSignUp {
 
-    public static String SignupProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String email, String password, String name, String industry, String description) throws IOException {
+    public static String SignupProcess(PrintWriter out, BufferedReader in, String email, String password, String name, String industry, String description) throws IOException {
 
 
 

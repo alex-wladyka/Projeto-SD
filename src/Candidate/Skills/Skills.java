@@ -29,7 +29,7 @@ public class Skills {
     @Override
     public String toString() {
         return
-                "Nome da Skill='" + skill + " - " +
-                "Experiencia= " + experience + "anos";
+                "Nome da Skill='" + skill + " | " +
+                "Experiencia=' " + experience + " anos";
     }
 }

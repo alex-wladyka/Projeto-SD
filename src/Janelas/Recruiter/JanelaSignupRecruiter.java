@@ -24,7 +24,7 @@ public class JanelaSignupRecruiter extends JFrame {
 
 
 
-    public JanelaSignupRecruiter(BufferedReader reader, PrintWriter out, BufferedReader in) {
+    public JanelaSignupRecruiter(PrintWriter out, BufferedReader in) {
 
         setContentPane(panel1);
         setTitle("Janela SignUp Recruiter");
@@ -37,10 +37,10 @@ public class JanelaSignupRecruiter extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String status = RecruiterSignUp.SignupProcess(reader,out,in,emailField.getText(),senhaField.getText(),nameField.getText(),industryField.getText(),descricaoField.getText());
+                    String status = RecruiterSignUp.SignupProcess(out,in,emailField.getText(),senhaField.getText(),nameField.getText(),industryField.getText(),descricaoField.getText());
                     if (status.equals("SUCCESS")) {
                         JOptionPane.showMessageDialog(null, "Conta cadastrada com sucesso!");
-                        new JanelaLogin(1,reader,out,in);
+                        new JanelaLogin(1,out,in);
                         setVisible(false);
                     }
                     else if (status.equals("USER_EXISTS")) {
@@ -57,7 +57,7 @@ public class JanelaSignupRecruiter extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuLogin(1,reader,out,in);
+                new MenuLogin(1,out,in);
                 setVisible(false);
             }
         });

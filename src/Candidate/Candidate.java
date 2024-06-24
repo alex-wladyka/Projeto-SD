@@ -3,17 +3,15 @@ package Candidate;
 public class Candidate {
 
 
-    public Candidate(String id,String email, String password, String name) {
+    public Candidate(String id,String skill, String experience) {
         this.id = id;
-        this.email = email;
-        this.password = password;
-        this.name = name;
+        this.skill = skill;
+        this.experience = experience;
     }
 
     private String id;
-    private String email;
-    private String password;
-    private String name;
+    private String skill;
+    private String experience;
 
     public String getId() {
         return id;
@@ -23,27 +21,26 @@ public class Candidate {
         this.id = id;
     }
 
-    public String getEmail() {
-        return email;
+    public String getSkill() {
+        return skill;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setSkill(String skill) {
+        this.skill = skill;
     }
 
-    public String getPassword() {
-        return password;
+    public String getExperience() {
+        return experience;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setExperience(String experience) {
+        this.experience = experience;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public String toString() {
+        return "ID='" + id +
+                " | Skill='" + skill +
+                " | Experiencia='" + experience;
     }
 }

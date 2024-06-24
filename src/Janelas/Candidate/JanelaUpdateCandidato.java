@@ -17,7 +17,7 @@ public class JanelaUpdateCandidato extends JFrame{
     private JButton continuarButton;
     private JButton voltarButton;
 
-    public JanelaUpdateCandidato(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public JanelaUpdateCandidato(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Janela Update Candidato");
@@ -30,12 +30,12 @@ public class JanelaUpdateCandidato extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String status = CandidateUpdate.updateProcess(reader,out,in,token,emailField.getText(),senhaField.getText(),nomeField.getText());
+                    String status = CandidateUpdate.updateProcess(out,in,token,emailField.getText(),senhaField.getText(),nomeField.getText());
 
                     switch (status) {
                         case "SUCCESS":
                             JOptionPane.showMessageDialog(null, "Dados Alterados com Sucesso!", "Sucesso", JOptionPane.PLAIN_MESSAGE);
-                            new MenuPrincipalCandidato(reader,out,in,token);
+                            new MenuPrincipalCandidato(out,in,token);
                             setVisible(false);
                             break;
                         case "INVALID_EMAIL":
@@ -54,7 +54,11 @@ public class JanelaUpdateCandidato extends JFrame{
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuPrincipalCandidato(reader,out,in,token);
+                try {
+                    new MenuPrincipalCandidato(out,in,token);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
                 setVisible(false);
             }
         });

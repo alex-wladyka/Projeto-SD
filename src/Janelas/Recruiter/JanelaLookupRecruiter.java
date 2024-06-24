@@ -24,9 +24,9 @@ public class JanelaLookupRecruiter extends JFrame {
     private static String industry;
     private static String descricao;
 
-    public JanelaLookupRecruiter(BufferedReader reader, PrintWriter out, BufferedReader in, String token) throws IOException {
+    public JanelaLookupRecruiter(PrintWriter out, BufferedReader in, String token) throws IOException {
 
-        RecruiterLookup.LookupProcess(reader,out,in,token);
+        RecruiterLookup.LookupProcess(out,in,token);
 
         setContentPane(panel1);
         setTitle("Janela Lookup Recruiter");
@@ -44,7 +44,7 @@ public class JanelaLookupRecruiter extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuPrincipalRecruiter(reader, out, in, token);
+                new MenuPrincipalRecruiter(out, in, token);
                 setVisible(false);
             }
         });

@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class JobDelete {
-    public static String deleteProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String id) throws IOException {
+    public static String deleteProcess(PrintWriter out, BufferedReader in, String token, String id) throws IOException {
 
         JsonObject requestJson = JsonUtils.createRequest("DELETE_JOB");
         requestJson.addProperty("token", token);

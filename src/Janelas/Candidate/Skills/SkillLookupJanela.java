@@ -19,7 +19,7 @@ public class SkillLookupJanela extends JFrame {
     private static String skill;
     private static String experience;
 
-    public SkillLookupJanela(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public SkillLookupJanela(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Janela Lookup Skills");
@@ -32,7 +32,7 @@ public class SkillLookupJanela extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String status = SkillLookup.LookupSkillProcess(reader,out,in,token,skillField.getText());
+                    String status = SkillLookup.LookupSkillProcess(out,in,token,skillField.getText());
 
                     switch(status) {
                         case "SUCCESS":
@@ -54,7 +54,7 @@ public class SkillLookupJanela extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuSkills(reader, out, in, token);
+                new MenuSkills(out, in, token);
                 setVisible(false);
             }
         });

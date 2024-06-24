@@ -17,7 +17,7 @@ public class CadastroJobs extends JFrame {
     private JButton voltarButton;
     private JButton cadastrarButton;
 
-    public CadastroJobs(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public CadastroJobs(PrintWriter out, BufferedReader in, String token) {
 
         setContentPane(panel1);
         setTitle("Cadastro Jobs");
@@ -30,12 +30,12 @@ public class CadastroJobs extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String status = JobInclude.IncludeSkillProcess(reader,out,in,token,skillField.getText(),experienceSpinner.getValue().toString());
+                    String status = JobInclude.IncludeSkillProcess(out,in,token,skillField.getText(),experienceSpinner.getValue().toString());
 
                     switch(status) {
                         case "SUCCESS":
                             JOptionPane.showMessageDialog(null, "Cadastrado com sucesso!");
-                            new MenuJobs(reader, out, in, token);
+                            new MenuJobs(out, in, token);
                             setVisible(false);
                             break;
                         case "SKILL_NOT_EXIST":
@@ -54,7 +54,7 @@ public class CadastroJobs extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuJobs(reader, out, in, token);
+                new MenuJobs(out, in, token);
                 setVisible(false);
             }
         });

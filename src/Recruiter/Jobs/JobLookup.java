@@ -11,7 +11,7 @@ import java.io.PrintWriter;
 
 public class JobLookup {
 
-    public static String LookupSkillProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String id) throws IOException {
+    public static String LookupSkillProcess(PrintWriter out, BufferedReader in, String token, String id) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("LOOKUP_JOB");
         jsonRequest.addProperty("token", token);

@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class JobInclude {
-    public static String IncludeSkillProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String skill, String experience) throws IOException {
+    public static String IncludeSkillProcess(PrintWriter out, BufferedReader in, String token, String skill, String experience) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("INCLUDE_JOB");
         jsonRequest.addProperty("token", token);

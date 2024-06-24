@@ -10,7 +10,7 @@ import java.io.PrintWriter;
 
 public class CandidateLookup {
 
-    public static void LookupProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token) throws IOException {
+    public static void LookupProcess(PrintWriter out, BufferedReader in, String token) throws IOException {
         if(token == null || token.isEmpty()) {
             System.out.println("Você não está logado");
             return;

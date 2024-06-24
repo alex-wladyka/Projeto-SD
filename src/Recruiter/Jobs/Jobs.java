@@ -37,9 +37,8 @@ public class Jobs {
 
     @Override
     public String toString() {
-        return "ID= " + idJob +
-                " - Skill= " + nameSkill +
-                " - Experiencia= " + experience +
-                '}';
+        return "ID='" + idJob +
+                " | Skill='" + nameSkill +
+                " | Experiencia='" + experience;
     }
 }

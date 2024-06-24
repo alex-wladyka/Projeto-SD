@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 
 
 public class RecruiterUpdate {
-    public static String updateProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String email, String password, String name, String industry, String description) throws IOException {
+    public static String updateProcess(PrintWriter out, BufferedReader in, String token, String email, String password, String name, String industry, String description) throws IOException {
 
 
         JsonObject jsonRequest = JsonUtils.createRequest("UPDATE_ACCOUNT_RECRUITER");

@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class SkillUpdate {
-    public static String IUpdateSkillProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String skill, String novaSkill, String experience) throws IOException {
+    public static String IUpdateSkillProcess(PrintWriter out, BufferedReader in, String token, String skill, String novaSkill, String experience) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("UPDATE_SKILL");
         jsonRequest.addProperty("token", token);

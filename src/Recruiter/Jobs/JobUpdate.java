@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class JobUpdate {
-    public static String UpdateSkillProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token, String id, String skill, String experience) throws IOException {
+    public static String UpdateSkillProcess(PrintWriter out, BufferedReader in, String token, String id, String skill, String experience) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("UPDATE_JOB");
         jsonRequest.addProperty("token", token);

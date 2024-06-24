@@ -19,7 +19,7 @@ public class MenuSkills extends JFrame {
     private JButton buscarSkillButton;
     private JButton voltarButton;
 
-    public MenuSkills(BufferedReader reader, PrintWriter out, BufferedReader in, String token) {
+    public MenuSkills(PrintWriter out, BufferedReader in, String token) {
         setContentPane(panel1);
         setTitle("Janela Menu Skills");
         setSize(500, 500);
@@ -31,7 +31,11 @@ public class MenuSkills extends JFrame {
         voltarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuPrincipalCandidato(reader,out,in,token);
+                try {
+                    new MenuPrincipalCandidato(out,in,token);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
                 setVisible(false);
             }
         });
@@ -40,35 +44,35 @@ public class MenuSkills extends JFrame {
         cadastrarSkillButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new CadastroSkills(reader,out,in,token);
+                new CadastroSkills(out,in,token);
                 setVisible(false);
             }
         });
         buscarSkillButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new SkillLookupJanela(reader,out,in,token);
+                new SkillLookupJanela(out,in,token);
                 setVisible(false);
             }
         });
         verificarSkillSetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new SkillSetLookupJanela(reader,out,in,token);
+                new SkillSetLookupJanela(out,in,token);
                 setVisible(false);
             }
         });
         modificarSkillButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new SkillUpdateJanela(reader,out,in,token);
+                new SkillUpdateJanela(out,in,token);
                 setVisible(false);
             }
         });
         deletarSkillButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new SkillDeleteJanela(reader,out,in,token);
+                new SkillDeleteJanela(out,in,token);
                 setVisible(false);
             }
         });

@@ -10,7 +10,7 @@ import java.io.PrintWriter;
 
 public class RecruiterLookup {
 
-    public static void LookupProcess(BufferedReader reader, PrintWriter out, BufferedReader in, String token) throws IOException {
+    public static void LookupProcess(PrintWriter out, BufferedReader in, String token) throws IOException {
 
         JsonObject requestJson = JsonUtils.createRequest("LOOKUP_ACCOUNT_RECRUITER");
         requestJson.addProperty("token", token);

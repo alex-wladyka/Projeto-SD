@@ -16,7 +16,7 @@ public class MenuRole extends JFrame {
     private JButton recrutadorButton;
     private JButton sairButton;
 
-    public MenuRole(BufferedReader reader, PrintWriter out, BufferedReader in) {
+    public MenuRole(PrintWriter out, BufferedReader in) {
         setContentPane(principal);
         setTitle("Janela Menu Role");
         setSize(500, 500);
@@ -40,7 +40,7 @@ public class MenuRole extends JFrame {
         candidatoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuLogin(0,reader, out, in);
+                new MenuLogin(0, out, in);
                 setVisible(false);
             }
         });
@@ -48,7 +48,7 @@ public class MenuRole extends JFrame {
         recrutadorButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new MenuLogin(1,reader, out, in);
+                new MenuLogin(1, out, in);
                 setVisible(false);
             }
         });
