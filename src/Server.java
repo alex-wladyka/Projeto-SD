@@ -8,11 +8,16 @@ import com.google.gson.JsonObject;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Server extends Thread {
 
     private Socket clientSocket;
     private BufferedWriter fileWriter;
+
+    private static List<String> usuariosLogados = new ArrayList<>();
+
 
     public Server(Socket clientSoc, BufferedWriter writer) {
         clientSocket = clientSoc;
@@ -191,18 +196,18 @@ public class Server extends Thread {
 
 
 
-                st = Conexao.getConexao().prepareStatement("SELECT * FROM candidate WHERE Email = ?");
+                st = Conexao.getConexao().prepareStatement("SELECT email FROM candidate WHERE Email = ? UNION SELECT email FROM recruiter WHERE Email = ?");
                 st.setString(1, email);
-
+                st.setString(2, email);
                 rs = st.executeQuery();
 
                 if (rs.next()) {
                     JsonObject Response = JsonUtils.createResponse(op, "USER_EXISTS", "");
-
                     out.println(JsonUtils.toJsonString(Response));
                     logWriter("Server", JsonUtils.toJsonString(Response));
                     return;
                 }
+
                 else {
 
                     st = Conexao.getConexao().prepareStatement("INSERT INTO candidate (Email, Nome, senha) VALUES (?, ?, ?)");
@@ -231,18 +236,18 @@ public class Server extends Thread {
                 description = dataJson.get("description").getAsString();
 
 
-                st = Conexao.getConexao().prepareStatement("SELECT * FROM recruiter WHERE Email = ?");
+                st = Conexao.getConexao().prepareStatement("SELECT email FROM candidate WHERE Email = ? UNION SELECT email FROM recruiter WHERE Email = ?");
                 st.setString(1, email);
-
+                st.setString(2, email);
                 rs = st.executeQuery();
 
                 if (rs.next()) {
                     JsonObject Response = JsonUtils.createResponse(op, "USER_EXISTS", "");
-
                     out.println(JsonUtils.toJsonString(Response));
                     logWriter("Server", JsonUtils.toJsonString(Response));
                     return;
                 }
+
                 else {
 
                     st = Conexao.getConexao().prepareStatement("INSERT INTO recruiter (Email, Nome, senha, industry, description) VALUES (?, ?, ?, ?, ?)");
@@ -302,6 +307,8 @@ public class Server extends Thread {
         if (rs.next()) {
             int id = Integer.parseInt(rs.getString("id"));
             String token = JsonUtils.JWTValidator.generateToken(id, role);
+            usuariosLogados.add(token);
+            ListaLogin.updateLista(usuariosLogados);
             JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", token);
             out.println(JsonUtils.toJsonString(responseJson));
             logWriter("Server",JsonUtils.toJsonString(responseJson));
@@ -330,10 +337,10 @@ public class Server extends Thread {
         String name = dataJson.get("name").getAsString();
 
         PreparedStatement st;
-        st = Conexao.getConexao().prepareStatement("SELECT * FROM candidate WHERE Email = ?");
-        st.setString(1, email);
-
         ResultSet rs;
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM candidate WHERE Email = ? UNION SELECT email FROM recruiter WHERE Email = ?");
+        st.setString(1, email);
+        st.setString(2, email);
         rs = st.executeQuery();
 
         if (rs.next()) {
@@ -383,10 +390,10 @@ public class Server extends Thread {
         String description = dataJson.get("description").getAsString();
 
         PreparedStatement st;
-        st = Conexao.getConexao().prepareStatement("SELECT * FROM recruiter WHERE Email = ?");
-        st.setString(1, email);
-
         ResultSet rs;
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM candidate WHERE Email = ? UNION SELECT email FROM recruiter WHERE Email = ?");
+        st.setString(1, email);
+        st.setString(2, email);
         rs = st.executeQuery();
 
         if (rs.next()) {
@@ -442,7 +449,30 @@ public class Server extends Thread {
         st.setInt(1, id);
         st.executeUpdate();
 
+        /*switch (role){
+            case "CANDIDATE":
+                st = Conexao.getConexao().prepareStatement("DELETE FROM skills WHERE idCandidate = ?");
+                st.setInt(1, id);
+                st.executeUpdate();
 
+                st = Conexao.getConexao().prepareStatement("DELETE FROM messages WHERE idCandidate = ?");
+                st.setInt(1, id);
+                st.executeUpdate();
+
+                break;
+            case "RECRUITER":
+                st = Conexao.getConexao().prepareStatement("DELETE FROM jobs WHERE idRecruiter = ?");
+                st.setInt(1, id);
+                st.executeUpdate();
+
+                st = Conexao.getConexao().prepareStatement("DELETE FROM messages WHERE idRecruiter = ?");
+                st.setInt(1, id);
+                st.executeUpdate();
+                break;
+        }*/
+
+        usuariosLogados.remove(token);
+        ListaLogin.updateLista(usuariosLogados);
 
         JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", "");
         out.println(JsonUtils.toJsonString(responseJson));
@@ -517,6 +547,9 @@ public class Server extends Thread {
         }
 
         String token = requestJson.get("token").getAsString();
+
+        usuariosLogados.remove(token);
+        ListaLogin.updateLista(usuariosLogados);
 
         JsonObject data = new JsonObject();
         JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", "");
@@ -833,7 +866,7 @@ public class Server extends Thread {
         JsonObject data = requestJson.get("data").getAsJsonObject();
 
         if(data.has("skill")){
-            if(data.get("skill").getAsString() == null || data.get("skill").getAsString().isEmpty()){
+            if(data.get("skill").getAsJsonArray().isEmpty()){
                 JsonObject responseJson = JsonUtils.createResponse("SEARCH_JOB", "INVALID_FIELD", "");
                 out.println(JsonUtils.toJsonString(responseJson));
                 logWriter("Server",JsonUtils.toJsonString(responseJson));
@@ -1073,11 +1106,13 @@ public class Server extends Thread {
             }
         }
 
-        data.addProperty("jobset_size", jobArray.size());
-        data.add("jobset", jobArray);
+        JsonObject dataArray = new JsonObject();
+
+        dataArray.addProperty("jobset_size", jobArray.size());
+        dataArray.add("jobset", jobArray);
 
         JsonObject responseJson = JsonUtils.createResponse("SEARCH_JOB", "SUCCESS", "");
-        responseJson.add("data",data);
+        responseJson.add("data",dataArray);
         logWriter("Server",JsonUtils.toJsonString(responseJson));
         out.println(JsonUtils.toJsonString(responseJson));
     }
@@ -1085,7 +1120,7 @@ public class Server extends Thread {
     private void IncludeJobProcess(PrintWriter out, JsonObject requestJson) throws IOException, SQLException {
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
 
-        if ((dataJson.get("skill").getAsString() == null || dataJson.get("skill").getAsString().isEmpty() ) || (dataJson.get("experience").getAsString() == null || dataJson.get("experience").getAsString().isEmpty() || !dataJson.get("experience").getAsString().matches("[0-9]+"))){
+        if ((dataJson.get("skill").getAsString() == null || dataJson.get("skill").getAsString().isEmpty() ) || (dataJson.get("experience").getAsString() == null || dataJson.get("experience").getAsString().isEmpty() || !dataJson.get("experience").getAsString().matches("[0-9]+")) || !(dataJson.get("searchable").getAsString().equals("YES") || dataJson.get("searchable").getAsString().equals("NO")) || !(dataJson.get("available").getAsString().equals("YES") || dataJson.get("available").getAsString().equals("NO"))){
             JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "INVALID_FIELD", "");
             out.println(JsonUtils.toJsonString(responseJson));
             logWriter("Server",JsonUtils.toJsonString(responseJson));
@@ -1367,7 +1402,7 @@ public class Server extends Thread {
 
             boolean available = dataJson.get("available").getAsString().equals("YES");
 
-            st = Conexao.getConexao().prepareStatement("UPDATE jobs SET  avaliable = ? WHERE idJob = ?");
+            st = Conexao.getConexao().prepareStatement("UPDATE jobs SET available = ? WHERE idJob = ?");
             st.setBoolean(1, available);
             st.setInt(2, jobId);
             st.executeUpdate();
@@ -1447,7 +1482,7 @@ public class Server extends Thread {
         JsonObject data = requestJson.get("data").getAsJsonObject();
 
         if(data.has("skill")){
-            if(data.get("skill").getAsString() == null || data.get("skill").getAsString().isEmpty()){
+            if(data.get("skill").getAsJsonArray().isEmpty()){
                 JsonObject responseJson = JsonUtils.createResponse("SEARCH_CANDIDATE", "INVALID_FIELD", "");
                 out.println(JsonUtils.toJsonString(responseJson));
                 logWriter("Server",JsonUtils.toJsonString(responseJson));
@@ -1487,9 +1522,9 @@ public class Server extends Thread {
                 st.setInt(1, rs.getInt("idSkillDataset")); //Pegar o nome da skill
 
                 rs2 = st.executeQuery();
-                if (rs2.next()) {
-                    nameSkill = rs2.getString("nameSkill");
-                }
+
+                rs2.next();
+                nameSkill = rs2.getString("nameSkill");
 
                 experiencia = rs.getString("experiencia");
                 idCandidate = rs.getString("idCandidate");
@@ -1497,7 +1532,8 @@ public class Server extends Thread {
                 var jobObject = new JsonObject();
                 jobObject.addProperty("skill", nameSkill);
                 jobObject.addProperty("experience", experiencia);
-                jobObject.addProperty("id", idCandidate);
+                jobObject.addProperty("id", rs.getInt("idSkillDataset"));
+                jobObject.addProperty("id_user", idCandidate);
                 candidateArray.add(jobObject); // adicionar no array de candidatos
 
             }
@@ -1540,7 +1576,8 @@ public class Server extends Thread {
                     var jobObject = new JsonObject();
                     jobObject.addProperty("skill", nameSkill);
                     jobObject.addProperty("experience", experiencia);
-                    jobObject.addProperty("id", idCandidate);
+                    jobObject.addProperty("id", rs.getInt("idSkillDataset"));
+                    jobObject.addProperty("id_user", idCandidate);
                     candidateArray.add(jobObject);
 
                 }
@@ -1588,7 +1625,8 @@ public class Server extends Thread {
                         var jobObject = new JsonObject();
                         jobObject.addProperty("skill", nameSkill);
                         jobObject.addProperty("experience", experiencia);
-                        jobObject.addProperty("id", idCandidate);
+                        jobObject.addProperty("id", rs.getInt("idSkillDataset"));
+                        jobObject.addProperty("id_user", idCandidate);
                         candidateArray.add(jobObject);
 
                     }
@@ -1633,7 +1671,8 @@ public class Server extends Thread {
                         var jobObject = new JsonObject();
                         jobObject.addProperty("skill", nameSkill);
                         jobObject.addProperty("experience", experiencia);
-                        jobObject.addProperty("id", idCandidate);
+                        jobObject.addProperty("id", rs.getInt("idSkillDataset"));
+                        jobObject.addProperty("id_user", idCandidate);
                         candidateArray.add(jobObject);
 
                     }
@@ -1672,7 +1711,8 @@ public class Server extends Thread {
                         var jobObject = new JsonObject();
                         jobObject.addProperty("skill", nameSkill);
                         jobObject.addProperty("experience", experiencia);
-                        jobObject.addProperty("id", idCandidate);
+                        jobObject.addProperty("id", rs.getInt("idSkillDataset"));
+                        jobObject.addProperty("id_user", idCandidate);
                         candidateArray.add(jobObject);
                     }
 
@@ -1682,11 +1722,13 @@ public class Server extends Thread {
             }
         }
 
-        data.addProperty("profile_size", candidateArray.size());
-        data.add("profile", candidateArray);
+        JsonObject dataArrray = new JsonObject();
+
+        dataArrray.addProperty("profile_size", candidateArray.size());
+        dataArrray.add("profile", candidateArray);
 
         JsonObject responseJson = JsonUtils.createResponse("SEARCH_CANDIDATE", "SUCCESS", "");
-        responseJson.add("data",data);
+        responseJson.add("data",dataArrray);
         logWriter("Server",JsonUtils.toJsonString(responseJson));
         out.println(JsonUtils.toJsonString(responseJson));
     }
@@ -1696,7 +1738,7 @@ public class Server extends Thread {
         String token = requestJson.get("token").getAsString();
         JsonObject dataJson = requestJson.get("data").getAsJsonObject();
 
-        if (dataJson.get("id").getAsString() == null || dataJson.get("id").getAsString().isEmpty() || !dataJson.get("id").getAsString().matches("[0-9]+")) {
+        if (dataJson.get("id_user").getAsString() == null || dataJson.get("id_user").getAsString().isEmpty() || !dataJson.get("id_user").getAsString().matches("[0-9]+")) {
             JsonObject responseJson = JsonUtils.createResponse("CHOOSE_CANDIDATE", "INVALID_FIELD", "");
             out.println(JsonUtils.toJsonString(responseJson));
             logWriter("Server",JsonUtils.toJsonString(responseJson));
@@ -1705,7 +1747,7 @@ public class Server extends Thread {
 
         JsonObject responseJson;
         int idRecruiter = JsonUtils.JWTValidator.getIdClaim(token);
-        int idCandidate = dataJson.get("id").getAsInt();
+        int idCandidate = dataJson.get("id_user").getAsInt();
 
         PreparedStatement st;
         st = Conexao.getConexao().prepareStatement("SELECT * FROM candidate WHERE id = ?");
@@ -1798,12 +1840,12 @@ public class Server extends Thread {
             ServerSocket serverSocket = new ServerSocket(serverPort);
 
             System.out.println("Servidor iniciado com sucesso, porta: " + serverPort);
+            ListaLogin frame = new ListaLogin();
             while(true){
                 while (true) {
                     System.out.println("Esperando a conexão...");
                     Socket clientSocket = serverSocket.accept();
                     System.out.println("O cliente foi conectado: " + clientSocket);
-
                     new Server(clientSocket, fileWriter);
                 }
             }

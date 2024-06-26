@@ -35,7 +35,9 @@ public class JobSet_Lookup {
             String skillName = job.get("skill").getAsString();
             int experience = job.get("experience").getAsInt();
             int id = job.get("id").getAsInt();
-            jobs.add(new Jobs(id,skillName,experience));
+            String available = job.get("available").getAsString();
+            String searchable = job.get("searchable").getAsString();
+            jobs.add(new Jobs(id,skillName,experience,available));
         }
 
         return jobs;

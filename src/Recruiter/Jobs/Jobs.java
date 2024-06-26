@@ -4,11 +4,13 @@ public class Jobs {
     private int idJob;
     private String nameSkill;
     private int experience;
+    private String available;
 
-    public Jobs(int idJob, String nameSkill, int experience) {
+    public Jobs(int idJob, String nameSkill, int experience, String available) {
         this.idJob = idJob;
         this.nameSkill = nameSkill;
         this.experience = experience;
+        this.available = available;
     }
 
     public int getIdJob() {
@@ -35,10 +37,15 @@ public class Jobs {
         this.experience = experience;
     }
 
+    public String getAvailable() { return available;}
+
+    public void setAvailable(String available) { this.available = available;}
+
     @Override
     public String toString() {
         return "ID='" + idJob +
                 " | Skill='" + nameSkill +
-                " | Experiencia='" + experience;
+                " | Experiencia='" + experience +
+                " | Available='" + available;
     }
 }

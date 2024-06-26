@@ -46,7 +46,26 @@
 	FOREIGN KEY (idRecruiter) REFERENCES recruiter(id),
 	FOREIGN KEY (idSkillDataset) REFERENCES skillDataset(idSkill)
 	);
+    
+    CREATE TABLE IF NOT EXISTS messages(
+    idRecruiter int NOT NULL,
+    idCandidate int NOT NULL,
+    FOREIGN KEY (idRecruiter) REFERENCES candidate(id),
+    FOREIGN KEY (idCandidate) REFERENCES recruiter(id),
+    PRIMARY KEY (idRecruiter, idCandidate)
+    );
 
+	ALTER TABLE jobs
+	ADD CONSTRAINT fk_jobs_recruiter FOREIGN KEY (idRecruiter) REFERENCES recruiter(id) ON DELETE CASCADE;
+    
+    ALTER TABLE messages
+	ADD CONSTRAINT fk_messages_recruiter FOREIGN KEY (idRecruiter) REFERENCES recruiter(id) ON DELETE CASCADE;
+    
+	ALTER TABLE skills
+	ADD CONSTRAINT fk_skills_candidate FOREIGN KEY (idCandidate) REFERENCES candidate(id) ON DELETE CASCADE;
+    
+	ALTER TABLE messages
+	ADD CONSTRAINT fk_messages_candidate FOREIGN KEY (idCandidate) REFERENCES candidate(id) ON DELETE CASCADE;
     
     
     

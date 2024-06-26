@@ -12,7 +12,7 @@ public class ChooseCandidate {
         JsonObject jsonRequest = JsonUtils.createRequest("CHOOSE_CANDIDATE");
         jsonRequest.addProperty("token", token);
         JsonObject data = new JsonObject();
-        data.addProperty("id", id);
+        data.addProperty("id_user", id);
         jsonRequest.add("data", data);
 
 

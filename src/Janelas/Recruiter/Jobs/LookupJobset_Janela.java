@@ -45,7 +45,6 @@ public class LookupJobset_Janela extends JFrame {
                     model.clear();
                     jobSetList.setModel(model);
                     List<Jobs> jobSet = JobSet_Lookup.LookupJobSetProcess(out,in,token);
-                    //JScrollPane jScrollPane = new JScrollPane();
 
                     if (jobSet.isEmpty()) {
                         JOptionPane.showMessageDialog(null, "Nenhuma vaga cadastrada","Aviso",JOptionPane.INFORMATION_MESSAGE);

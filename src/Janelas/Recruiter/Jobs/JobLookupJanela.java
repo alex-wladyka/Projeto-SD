@@ -17,8 +17,12 @@ public class JobLookupJanela extends JFrame {
     private JLabel experienceLabel;
     private JButton voltarButton;
     private JLabel idLabel;
+    private JLabel disponivelLabel;
+    private JLabel divulgavelLabel;
     private static String skill;
     private static String experience;
+    private static String available;
+    private static String searchable;
 
     public JobLookupJanela(PrintWriter out, BufferedReader in, String token) {
 
@@ -40,6 +44,8 @@ public class JobLookupJanela extends JFrame {
                             skillLabel.setText(skill);
                             experienceLabel.setText(experience);
                             idLabel.setText(IDField.getText());
+                            disponivelLabel.setText(available);
+                            divulgavelLabel.setText(searchable);
                             break;
                         case "JOB_NOT_FOUND":
                             JOptionPane.showMessageDialog(null,"A vaga não pode ser encontrada.","Aviso",JOptionPane.WARNING_MESSAGE);
@@ -70,4 +76,8 @@ public class JobLookupJanela extends JFrame {
     public static void setExperience(String experience) {
         JobLookupJanela.experience = experience;
     }
+
+    public static void setAvailable(String available) { JobLookupJanela.available = available; }
+
+    public static void setSearchable(String searchable) { JobLookupJanela.searchable = searchable; }
 }

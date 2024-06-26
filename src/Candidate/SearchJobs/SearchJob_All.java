@@ -41,7 +41,8 @@ public class SearchJob_All {
             String skillName = job.get("skill").getAsString();
             int experiencia = job.get("experience").getAsInt();
             int id = job.get("id").getAsInt();
-            jobs.add(new Jobs(id,skillName,experiencia));
+            String available = job.get("available").getAsString();
+            jobs.add(new Jobs(id,skillName,experiencia,available));
         }
 
         return jobs;

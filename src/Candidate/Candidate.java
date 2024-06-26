@@ -3,13 +3,15 @@ package Candidate;
 public class Candidate {
 
 
-    public Candidate(String id,String skill, String experience) {
+    public Candidate(String id,String skill, String experience, String id_Skill) {
         this.id = id;
         this.skill = skill;
         this.experience = experience;
+        this.id_skill = id_Skill;
     }
 
     private String id;
+    private String id_skill;
     private String skill;
     private String experience;
 
@@ -37,10 +39,15 @@ public class Candidate {
         this.experience = experience;
     }
 
+    public String getId_skill() {return id_skill;}
+
+    public void setId_skill(String id_skill) {this.id_skill = id_skill;}
+
     @Override
     public String toString() {
-        return "ID='" + id +
+        return  "ID do Candidato='" + id +
                 " | Skill='" + skill +
+                " | ID da Skill='" + id_skill +
                 " | Experiencia='" + experience;
     }
 }

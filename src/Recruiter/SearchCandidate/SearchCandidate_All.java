@@ -39,12 +39,15 @@ public class SearchCandidate_All {
         JsonArray jobSet = dataResponse.getAsJsonArray("profile");
         List<Candidate> candidates = new ArrayList<>();
 
-        for (int i = 0; i < dataResponse.get("profile_size").getAsInt(); i++) {
-            JsonObject profile = jobSet.get(i).getAsJsonObject();
-            String skillName = profile.get("skill").getAsString();
-            String experiencia = profile.get("experience").getAsString();
-            String id = profile.get("id").getAsString();
-            candidates.add(new Candidate(id,skillName,experiencia));
+        if (JsonUtils.parseJson(jsonResponse).get("status").getAsString().equals("SUCCESS")) {
+            for (int i = 0; i < dataResponse.get("profile_size").getAsInt(); i++) {
+                JsonObject profile = jobSet.get(i).getAsJsonObject();
+                String skillName = profile.get("skill").getAsString();
+                String experiencia = profile.get("experience").getAsString();
+                String id = profile.get("id").getAsString();
+                String id_user = profile.get("id_user").getAsString();
+                candidates.add(new Candidate(id_user, skillName, experiencia, id));
+            }
         }
 
         return candidates;

@@ -16,6 +16,11 @@ public class CadastroJobs extends JFrame {
     private JSpinner experienceSpinner;
     private JButton voltarButton;
     private JButton cadastrarButton;
+    private JCheckBox disponivelCheckBox;
+    private JCheckBox divulgavelCheckBox;
+    private String disponivel;
+    private String procuravel;
+
 
     public CadastroJobs(PrintWriter out, BufferedReader in, String token) {
 
@@ -29,8 +34,23 @@ public class CadastroJobs extends JFrame {
         cadastrarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
+                if (disponivelCheckBox.isSelected()) {
+                    disponivel = "YES";
+                }
+                else{
+                    disponivel = "NO";
+                }
+
+                if (divulgavelCheckBox.isSelected()) {
+                    procuravel = "YES";
+                }
+                else{
+                    procuravel = "NO";
+                }
+
                 try {
-                    String status = JobInclude.IncludeSkillProcess(out,in,token,skillField.getText(),experienceSpinner.getValue().toString());
+                    String status = JobInclude.IncludeSkillProcess(out,in,token,skillField.getText(),experienceSpinner.getValue().toString(),disponivel,procuravel);
 
                     switch(status) {
                         case "SUCCESS":

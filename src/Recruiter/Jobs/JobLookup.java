@@ -31,6 +31,8 @@ public class JobLookup {
             JsonObject dataResponse = jsonReturn.get("data").getAsJsonObject();
             JobLookupJanela.setSkill(dataResponse.get("skill").getAsString());
             JobLookupJanela.setExperience(dataResponse.get("experience").getAsString());
+            JobLookupJanela.setSearchable(dataResponse.get("searchable").getAsString());
+            JobLookupJanela.setAvailable(dataResponse.get("available").getAsString());
         }
 
         return status;

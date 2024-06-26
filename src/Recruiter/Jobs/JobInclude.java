@@ -8,13 +8,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class JobInclude {
-    public static String IncludeSkillProcess(PrintWriter out, BufferedReader in, String token, String skill, String experience) throws IOException {
+    public static String IncludeSkillProcess(PrintWriter out, BufferedReader in, String token, String skill, String experience, String available, String searchable) throws IOException {
 
         JsonObject jsonRequest = JsonUtils.createRequest("INCLUDE_JOB");
         jsonRequest.addProperty("token", token);
         JsonObject data = new JsonObject();
         data.addProperty("skill", skill);
         data.addProperty("experience", experience);
+        data.addProperty("available", available);
+        data.addProperty("searchable", searchable);
         jsonRequest.add("data", data);
 
         System.out.println("Client:"+jsonRequest);
