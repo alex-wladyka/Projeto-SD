@@ -50,10 +50,11 @@
     CREATE TABLE IF NOT EXISTS messages(
     idRecruiter int NOT NULL,
     idCandidate int NOT NULL,
-    FOREIGN KEY (idRecruiter) REFERENCES candidate(id),
-    FOREIGN KEY (idCandidate) REFERENCES recruiter(id),
+    FOREIGN KEY (idRecruiter) REFERENCES recruiter(id),
+    FOREIGN KEY (idCandidate) REFERENCES candidate(id),
     PRIMARY KEY (idRecruiter, idCandidate)
     );
+
 
 	ALTER TABLE jobs
 	ADD CONSTRAINT fk_jobs_recruiter FOREIGN KEY (idRecruiter) REFERENCES recruiter(id) ON DELETE CASCADE;

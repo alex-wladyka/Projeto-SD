@@ -10,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 public class Server extends Thread {
 
     private Socket clientSocket;
@@ -18,7 +17,6 @@ public class Server extends Thread {
 
     private static List<String> usuariosLogados = new ArrayList<>();
     private static List<String> ipLogados = new ArrayList<>();
-
 
     public Server(Socket clientSoc, BufferedWriter writer) {
         clientSocket = clientSoc;
@@ -36,131 +34,147 @@ public class Server extends Thread {
 
             boolean running = true;
             while (running) {
-                String jsonMessage = in.readLine();
+                try {
+                    String jsonMessage = in.readLine();
 
-                if (jsonMessage != null && jsonMessage.equalsIgnoreCase("exit")) {
-                    running = false;
-                    continue;
-                }
+                    if (jsonMessage == null || jsonMessage.equalsIgnoreCase("exit")) {
+                        running = false;
+                        continue;
+                    }
 
-                if (jsonMessage != null) {
                     logWriter("Client", jsonMessage);
                     JsonObject requestJson = JsonUtils.parseJson(jsonMessage);
                     String operation = requestJson.get("operation").getAsString();
 
-                    if(requestJson.has("token")) {
+                    if (requestJson.has("token")) {
                         if (requestJson.get("token").isJsonNull() || requestJson.get("token").getAsString().isEmpty()) {
                             JsonObject responseJson = JsonUtils.createResponse(operation, "INVALID_TOKEN", "");
                             logWriter("Server", JsonUtils.toJsonString(responseJson));
                             out.println(JsonUtils.toJsonString(responseJson));
-                            return;
+                            continue;
                         }
-
                     }
 
-                    switch (operation) {
-                        case "LOGIN_CANDIDATE":
-                           LoginProcess(requestJson, out, "CANDIDATE");
-                            break;
-                        case "SIGNUP_CANDIDATE":
-                            SignUpProcess(out, requestJson, "CANDIDATE");
-                            break;
-                        case "UPDATE_ACCOUNT_CANDIDATE":
-                            UpdateCandidateProcess(out, requestJson);
-                            break;
-                        case "DELETE_ACCOUNT_CANDIDATE":
-                            DeleteProcess(out, requestJson, "CANDIDATE");
-                            break;
-                        case "LOOKUP_ACCOUNT_CANDIDATE":
-                            LookUpProcess(out, requestJson, "CANDIDATE");
-                            break;
-                        case "LOGOUT_CANDIDATE":
-                            LogoutProcess(out, requestJson, "CANDIDATE");
-                            break;
-                        case "LOGIN_RECRUITER":
-                            LoginProcess(requestJson, out, "RECRUITER");
-                            break;
-                        case "SIGNUP_RECRUITER":
-                            SignUpProcess(out, requestJson, "RECRUITER");
-                            break;
-                        case "UPDATE_ACCOUNT_RECRUITER":
-                            UpdateRecruiterProcess(out, requestJson);
-                            break;
-                        case "DELETE_ACCOUNT_RECRUITER":
-                            DeleteProcess(out, requestJson, "RECRUITER");
-                            break;
-                        case "LOOKUP_ACCOUNT_RECRUITER":
-                            LookUpProcess(out, requestJson, "RECRUITER");
-                            break;
-                        case "LOGOUT_RECRUITER":
-                            LogoutProcess(out, requestJson, "RECRUITER");
-                            break;
-                        case "INCLUDE_SKILL":
-                            IncludeSkillProcess(out, requestJson);
-                            break;
-                        case "LOOKUP_SKILL":
-                            LookupSkillProcess(out, requestJson);
-                            break;
-                        case "LOOKUP_SKILLSET":
-                            LookupSkillsetProcess(out, requestJson);
-                            break;
-                        case "DELETE_SKILL":
-                            DeleteSkillProcess(out, requestJson);
-                            break;
-                        case "UPDATE_SKILL":
-                            UpdateSkillProcess(out, requestJson);
-                            break;
-                        case "INCLUDE_JOB":
-                            IncludeJobProcess(out, requestJson);
-                            break;
-                        case "LOOKUP_JOB":
-                            LookupJobProcess(out, requestJson);
-                            break;
-                        case "LOOKUP_JOBSET":
-                            LookupJobsetProcess(out, requestJson);
-                            break;
-                        case "DELETE_JOB":
-                            DeleteJobProcess(out, requestJson);
-                            break;
-                        case "UPDATE_JOB":
-                            UpdateJobProcess(out, requestJson);
-                            break;
-                        case "SEARCH_JOB":
-                            SearchJobProcess(out, requestJson);
-                            break;
-                        case "SET_JOB_AVAILABLE":
-                            UpdateJobAvaliabityProcess(out, requestJson);
-                            break;
-                        case "SET_JOB_SEARCHABLE":
-                            UpdateJobSearchableProcess(out, requestJson);
-                            break;
-                        case "SEARCH_CANDIDATE":
-                            SearchCandidateProcess(out, requestJson);
-                            break;
-                        case "CHOOSE_CANDIDATE":
-                            ChooseCandidateProcess(out, requestJson);
-                            break;
-                        case "GET_COMPANY":
-                            GetMessagesProcess(out, requestJson);
-                            break;
-                        default:
-                            JsonObject Response = JsonUtils.createResponse(operation, "INVALID_OPERATION", "");
-                            out.println(JsonUtils.toJsonString(Response));
-                            logWriter("Server", JsonUtils.toJsonString(Response));
-                    }
+                    handleOperation(operation, requestJson, out);
+                } catch (IOException e) {
+                    System.err.println("Erro na leitura da mensagem: " + e.getMessage());
+                    running = false;
+                } catch (SQLException e) {
+                    System.err.println("Erro no banco de dados: " + e.getMessage());
+                    running = false;
+                } catch (Exception e) {
+                    System.err.println("Erro inesperado: " + e.getMessage());
+                    running = false;
                 }
             }
-        } catch (IOException | SQLException e) {
+        } catch (IOException e) {
             System.err.println("Erro no servidor: " + e.getMessage());
         } finally {
-            try {
-                if (in != null) in.close();
-                if (out != null) out.close();
-                if (fileWriter != null) fileWriter.close();
-                if (clientSocket != null && !clientSocket.isClosed()) clientSocket.close();
-            } catch (IOException e) {
-                System.err.println("Erro ao fechar recursos: " + e.getMessage());
-            }
+            closeResources(in, out, clientSocket);
+
+        }
+    }
+
+    private void handleOperation(String operation, JsonObject requestJson, PrintWriter out) throws SQLException, IOException {
+        switch (operation) {
+            case "LOGIN_CANDIDATE":
+                LoginProcess(requestJson, out, "CANDIDATE");
+                break;
+            case "SIGNUP_CANDIDATE":
+                SignUpProcess(out, requestJson, "CANDIDATE");
+                break;
+            case "UPDATE_ACCOUNT_CANDIDATE":
+                UpdateCandidateProcess(out, requestJson);
+                break;
+            case "DELETE_ACCOUNT_CANDIDATE":
+                DeleteProcess(out, requestJson, "CANDIDATE");
+                break;
+            case "LOOKUP_ACCOUNT_CANDIDATE":
+                LookUpProcess(out, requestJson, "CANDIDATE");
+                break;
+            case "LOGOUT_CANDIDATE":
+                LogoutProcess(out, requestJson, "CANDIDATE");
+                break;
+            case "LOGIN_RECRUITER":
+                LoginProcess(requestJson, out, "RECRUITER");
+                break;
+            case "SIGNUP_RECRUITER":
+                SignUpProcess(out, requestJson, "RECRUITER");
+                break;
+            case "UPDATE_ACCOUNT_RECRUITER":
+                UpdateRecruiterProcess(out, requestJson);
+                break;
+            case "DELETE_ACCOUNT_RECRUITER":
+                DeleteProcess(out, requestJson, "RECRUITER");
+                break;
+            case "LOOKUP_ACCOUNT_RECRUITER":
+                LookUpProcess(out, requestJson, "RECRUITER");
+                break;
+            case "LOGOUT_RECRUITER":
+                LogoutProcess(out, requestJson, "RECRUITER");
+                break;
+            case "INCLUDE_SKILL":
+                IncludeSkillProcess(out, requestJson);
+                break;
+            case "LOOKUP_SKILL":
+                LookupSkillProcess(out, requestJson);
+                break;
+            case "LOOKUP_SKILLSET":
+                LookupSkillsetProcess(out, requestJson);
+                break;
+            case "DELETE_SKILL":
+                DeleteSkillProcess(out, requestJson);
+                break;
+            case "UPDATE_SKILL":
+                UpdateSkillProcess(out, requestJson);
+                break;
+            case "INCLUDE_JOB":
+                IncludeJobProcess(out, requestJson);
+                break;
+            case "LOOKUP_JOB":
+                LookupJobProcess(out, requestJson);
+                break;
+            case "LOOKUP_JOBSET":
+                LookupJobsetProcess(out, requestJson);
+                break;
+            case "DELETE_JOB":
+                DeleteJobProcess(out, requestJson);
+                break;
+            case "UPDATE_JOB":
+                UpdateJobProcess(out, requestJson);
+                break;
+            case "SEARCH_JOB":
+                SearchJobProcess(out, requestJson);
+                break;
+            case "SET_JOB_AVAILABLE":
+                UpdateJobAvaliabityProcess(out, requestJson);
+                break;
+            case "SET_JOB_SEARCHABLE":
+                UpdateJobSearchableProcess(out, requestJson);
+                break;
+            case "SEARCH_CANDIDATE":
+                SearchCandidateProcess(out, requestJson);
+                break;
+            case "CHOOSE_CANDIDATE":
+                ChooseCandidateProcess(out, requestJson);
+                break;
+            case "GET_COMPANY":
+                GetMessagesProcess(out, requestJson);
+                break;
+            default:
+                JsonObject Response = JsonUtils.createResponse(operation, "INVALID_OPERATION", "");
+                out.println(JsonUtils.toJsonString(Response));
+                logWriter("Server", JsonUtils.toJsonString(Response));
+        }
+    }
+
+    private void closeResources(BufferedReader in, PrintWriter out, Socket clientSocket) {
+        try {
+            if (in != null) in.close();
+            if (out != null) out.close();
+            if (clientSocket != null && !clientSocket.isClosed()) clientSocket.close();
+        } catch (IOException e) {
+            System.err.println("Erro ao fechar recursos: " + e.getMessage());
         }
     }
 
@@ -1111,7 +1125,8 @@ public class Server extends Thread {
         String skill = dataJson.get("skill").getAsString();
         int experience = dataJson.get("experience").getAsInt();
         int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
-
+        boolean available = dataJson.get("available").getAsString().equals("YES");
+        boolean searchable = dataJson.get("searchable").getAsString().equals("YES");
         PreparedStatement st;
         ResultSet rs;
 
@@ -1127,8 +1142,8 @@ public class Server extends Thread {
             st.setInt(1, recruiterId);
             st.setInt(2, skillId);
             st.setInt(3, experience);
-            st.setBoolean(4,true);
-            st.setBoolean(5,true);
+            st.setBoolean(4,searchable);
+            st.setBoolean(5,available);
             st.executeUpdate();
 
             JsonObject responseJson = JsonUtils.createResponse("INCLUDE_JOB", "SUCCESS", "");
@@ -1223,8 +1238,9 @@ public class Server extends Thread {
         PreparedStatement st;
         ResultSet rs;
 
-        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idJob = ?");
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idJob = ? AND idRecruiter = ?");
         st.setInt(1, id);
+        st.setInt(2, recruiterId);
 
         rs = st.executeQuery();
 
@@ -1269,8 +1285,9 @@ public class Server extends Thread {
         PreparedStatement st;
         ResultSet rs;
 
-        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idJob = ?");
+        st = Conexao.getConexao().prepareStatement("SELECT * FROM jobs WHERE idJob = ? AND idRecruiter = ?");
         st.setInt(1, id);
+        st.setInt(2, recruiterId);
         rs = st.executeQuery();
         if (rs.next()) {
 
@@ -1825,12 +1842,14 @@ public class Server extends Thread {
 
             System.out.println("Servidor iniciado com sucesso, porta: " + serverPort);
             ListaLogin frame = new ListaLogin();
-            while(true){
-                while (true) {
+            while(true) {
+                try {
                     System.out.println("Esperando a conexão...");
                     Socket clientSocket = serverSocket.accept();
                     System.out.println("O cliente foi conectado: " + clientSocket);
                     new Server(clientSocket, fileWriter);
+                } catch (IOException e) {
+                    System.err.println("Erro ao aceitar conexão: " + e.getMessage());
                 }
             }
         } catch (IOException e){

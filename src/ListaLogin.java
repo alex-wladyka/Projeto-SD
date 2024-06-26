@@ -1,13 +1,10 @@
 import Utils.JsonUtils;
-
 import javax.swing.*;
-import java.awt.*;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SimpleTimeZone;
 
 public class ListaLogin extends JFrame {
     private JPanel panel1;
@@ -64,6 +61,11 @@ public class ListaLogin extends JFrame {
         if(!usuarios.isEmpty()){
             loginListModel.addAll(usuariosConnectados);
         }
+    }
+
+    public static void removerLista(String ip) throws SQLException  {
+        usuariosConnectados.remove(ip);
+        System.out.println(usuariosConnectados);
     }
 
 
