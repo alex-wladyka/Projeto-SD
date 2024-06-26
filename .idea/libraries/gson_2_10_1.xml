@@ -1,11 +1,11 @@
 <component name="libraryTable">
   <library name="gson-2.10.1">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../Bibliotecas/gson-2.10.1.jar!/" />
-      <root url="jar://$PROJECT_DIR$/../Bibliotecas/jackson-annotations-2.17.0.jar!/" />
-      <root url="jar://$PROJECT_DIR$/../Bibliotecas/jackson-core-2.17.0.jar!/" />
-      <root url="jar://$PROJECT_DIR$/../Bibliotecas/jackson-databind-2.17.0.jar!/" />
-      <root url="jar://$PROJECT_DIR$/../Bibliotecas/java-jwt-4.4.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../Área de Trabalho/utfpr/distribuidos/gson-2.10.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../Área de Trabalho/utfpr/distribuidos/jackson-annotations-2.17.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../Área de Trabalho/utfpr/distribuidos/jackson-core-2.17.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../Área de Trabalho/utfpr/distribuidos/jackson-databind-2.17.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../Área de Trabalho/utfpr/distribuidos/java-jwt-4.4.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

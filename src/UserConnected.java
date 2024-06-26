@@ -1,21 +1,23 @@
 public class UserConnected {
 
-    public UserConnected(String token, String id, String role) {
-        this.token = token;
+    public UserConnected(String ip, String id, String role, String email) {
+        this.ip = ip;
         this.id = id;
         this.role = role;
+        this.email = email;
     }
 
-    private String token;
+    private String ip;
     private String id;
     private String role;
+    private String email;
 
-    public String getToken() {
-        return token;
+    public String getIp() {
+        return ip;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 
     public String getId() {
@@ -36,10 +38,11 @@ public class UserConnected {
 
     @Override
     public String toString() {
-        return "Usuario Conectado{" +
-                "token='" + token + '\'' +
+        return "Usuario Conectado - { " +
+                "Ip='" + ip + '\'' +
                 ", id='" + id + '\'' +
                 ", role='" + role + '\'' +
+                ", email='" + email + '\'' +
                 '}';
     }
 }

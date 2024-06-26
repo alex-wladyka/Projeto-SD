@@ -77,6 +77,7 @@ public class MenuPrincipalCandidato extends JFrame {
                 try {
                     CandidateDelete.deleteProcess(out,in,token);
                     JOptionPane.showMessageDialog(null,"Dados excluidos com sucesso");
+                    String newToken = CandidateLogout.logoutProcess(out,in,token);
                     new MenuRole(out,in);
                     setVisible(false);
                 } catch (IOException ex) {

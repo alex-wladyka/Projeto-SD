@@ -17,6 +17,7 @@ public class Server extends Thread {
     private BufferedWriter fileWriter;
 
     private static List<String> usuariosLogados = new ArrayList<>();
+    private static List<String> ipLogados = new ArrayList<>();
 
 
     public Server(Socket clientSoc, BufferedWriter writer) {
@@ -308,7 +309,8 @@ public class Server extends Thread {
             int id = Integer.parseInt(rs.getString("id"));
             String token = JsonUtils.JWTValidator.generateToken(id, role);
             usuariosLogados.add(token);
-            ListaLogin.updateLista(usuariosLogados);
+            ipLogados.add(clientSocket.getInetAddress().toString());
+            ListaLogin.updateLista(usuariosLogados,ipLogados);
             JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", token);
             out.println(JsonUtils.toJsonString(responseJson));
             logWriter("Server",JsonUtils.toJsonString(responseJson));
@@ -338,7 +340,7 @@ public class Server extends Thread {
 
         PreparedStatement st;
         ResultSet rs;
-        st = Conexao.getConexao().prepareStatement("SELECT * FROM candidate WHERE Email = ? UNION SELECT email FROM recruiter WHERE Email = ?");
+        st = Conexao.getConexao().prepareStatement("SELECT email FROM candidate WHERE Email = ? UNION SELECT email FROM recruiter WHERE Email = ?");
         st.setString(1, email);
         st.setString(2, email);
         rs = st.executeQuery();
@@ -391,7 +393,7 @@ public class Server extends Thread {
 
         PreparedStatement st;
         ResultSet rs;
-        st = Conexao.getConexao().prepareStatement("SELECT * FROM candidate WHERE Email = ? UNION SELECT email FROM recruiter WHERE Email = ?");
+        st = Conexao.getConexao().prepareStatement("SELECT email FROM candidate WHERE Email = ? UNION SELECT email FROM recruiter WHERE Email = ?");
         st.setString(1, email);
         st.setString(2, email);
         rs = st.executeQuery();
@@ -448,31 +450,6 @@ public class Server extends Thread {
         st = Conexao.getConexao().prepareStatement("DELETE FROM "+table+" WHERE Id = ?");
         st.setInt(1, id);
         st.executeUpdate();
-
-        /*switch (role){
-            case "CANDIDATE":
-                st = Conexao.getConexao().prepareStatement("DELETE FROM skills WHERE idCandidate = ?");
-                st.setInt(1, id);
-                st.executeUpdate();
-
-                st = Conexao.getConexao().prepareStatement("DELETE FROM messages WHERE idCandidate = ?");
-                st.setInt(1, id);
-                st.executeUpdate();
-
-                break;
-            case "RECRUITER":
-                st = Conexao.getConexao().prepareStatement("DELETE FROM jobs WHERE idRecruiter = ?");
-                st.setInt(1, id);
-                st.executeUpdate();
-
-                st = Conexao.getConexao().prepareStatement("DELETE FROM messages WHERE idRecruiter = ?");
-                st.setInt(1, id);
-                st.executeUpdate();
-                break;
-        }*/
-
-        usuariosLogados.remove(token);
-        ListaLogin.updateLista(usuariosLogados);
 
         JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", "");
         out.println(JsonUtils.toJsonString(responseJson));
@@ -535,7 +512,7 @@ public class Server extends Thread {
 
     }
 
-    private void LogoutProcess(PrintWriter out, JsonObject requestJson, String role) throws IOException {
+    private void LogoutProcess(PrintWriter out, JsonObject requestJson, String role) throws IOException, SQLException {
 
         String op;
 
@@ -549,7 +526,8 @@ public class Server extends Thread {
         String token = requestJson.get("token").getAsString();
 
         usuariosLogados.remove(token);
-        ListaLogin.updateLista(usuariosLogados);
+        ipLogados.remove(clientSocket.getInetAddress().toString());
+        ListaLogin.updateLista(usuariosLogados, ipLogados);
 
         JsonObject data = new JsonObject();
         JsonObject responseJson = JsonUtils.createResponse(op, "SUCCESS", "");
@@ -860,7 +838,7 @@ public class Server extends Thread {
 
         String token = requestJson.get("token").getAsString(); //Pega o token do candidato
 
-        String nameSkill = "",experiencia,idJob;
+        String nameSkill = "",experiencia,idJob,available;
 
         var jobArray = new JsonArray(); //Cria a variável da lista de empregos
         JsonObject data = requestJson.get("data").getAsJsonObject();
@@ -913,11 +891,13 @@ public class Server extends Thread {
 
                 experiencia = rs.getString("experiencia");
                 idJob = rs.getString("idJob");
+                available = rs.getString("available");
 
                 var jobObject = new JsonObject();
                 jobObject.addProperty("skill", nameSkill);
                 jobObject.addProperty("experience", experiencia);
                 jobObject.addProperty("id", idJob);
+                jobObject.addProperty("available", available);
                 jobArray.add(jobObject); // adicionar no array de vagas
 
             }
@@ -1330,7 +1310,7 @@ public class Server extends Thread {
     private void LookupJobsetProcess(PrintWriter out, JsonObject requestJson) throws SQLException, IOException {
         String token = requestJson.get("token").getAsString();
         int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
-        String nameSkill,experiencia,idJob;
+        String nameSkill,experiencia,idJob,available,searchable;
 
         JsonObject data = new JsonObject();
         var jobArray = new JsonArray();
@@ -1356,11 +1336,15 @@ public class Server extends Thread {
 
             experiencia = rs.getString("experiencia");
             idJob = rs.getString("idJob");
+            available = rs.getString("available");
+            searchable = rs.getString("searchable");
 
             var jobObject = new JsonObject();
             jobObject.addProperty("skill", nameSkill);
             jobObject.addProperty("experience", experiencia);
             jobObject.addProperty("id", idJob);
+            jobObject.addProperty("available", available);
+            jobObject.addProperty("searchable", searchable);
             jobArray.add(jobObject);
 
         }

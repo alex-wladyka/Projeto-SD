@@ -7,7 +7,7 @@ public class Conexao {
 
     private static final String url = "jdbc:mysql://localhost:3306/projeto_sd";
     private static final String user = "root";
-    private static final String password = "Distribuidos";
+    private static final String password = "root";
 
 
     private static Connection con;

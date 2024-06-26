@@ -1,6 +1,8 @@
 package Janelas.Candidate;
 
+import Candidate.CandidateLogout;
 import Candidate.CandidateUpdate;
+import Janelas.MenuRole;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -35,7 +37,8 @@ public class JanelaUpdateCandidato extends JFrame{
                     switch (status) {
                         case "SUCCESS":
                             JOptionPane.showMessageDialog(null, "Dados Alterados com Sucesso!", "Sucesso", JOptionPane.PLAIN_MESSAGE);
-                            new MenuPrincipalCandidato(out,in,token);
+                            String newToken = CandidateLogout.logoutProcess(out,in,token);
+                            new MenuRole(out,in);
                             setVisible(false);
                             break;
                         case "INVALID_EMAIL":
