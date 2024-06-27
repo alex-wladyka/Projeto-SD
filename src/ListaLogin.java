@@ -28,7 +28,6 @@ public class ListaLogin extends JFrame {
         usuariosConnectados.clear();
 
         for (int i = 0; i < usuarios.size(); i++){
-            System.out.println("teste");
             String email="";
             String ip = ips.get(i);
             String id = String.valueOf(JsonUtils.JWTValidator.getIdClaim(usuarios.get(i)));
@@ -59,14 +58,8 @@ public class ListaLogin extends JFrame {
         }
 
         loginListModel.removeAllElements();
-        if(!usuarios.isEmpty()){
-            loginListModel.addAll(usuariosConnectados);
-        }
-    }
+        loginListModel.addAll(usuariosConnectados);
 
-    public static void removerLista(String ip) throws SQLException  {
-        usuariosConnectados.remove(ip);
-        System.out.println(usuariosConnectados);
     }
 
 

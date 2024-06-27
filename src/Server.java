@@ -57,12 +57,15 @@ public class Server extends Thread {
 
                     handleOperation(operation, requestJson, out);
                 } catch (IOException e) {
+                    removeLista();
                     System.err.println("Erro na leitura da mensagem: " + e.getMessage());
                     running = false;
                 } catch (SQLException e) {
+                    removeLista();
                     System.err.println("Erro no banco de dados: " + e.getMessage());
                     running = false;
                 } catch (Exception e) {
+                    removeLista();
                     System.err.println("Erro inesperado: " + e.getMessage());
                     running = false;
                 }
@@ -72,6 +75,20 @@ public class Server extends Thread {
         } finally {
             closeResources(in, out, clientSocket);
 
+        }
+    }
+
+    private void removeLista(){
+        for (int i = 0 ; i<ipLogados.size(); i++) {
+            try {
+                if (ipLogados.get(i).equals("/"+clientSocket.getInetAddress().getHostAddress())) {
+                    ipLogados.remove(ipLogados.get(i));
+                    usuariosLogados.remove(usuariosLogados.get(i));
+                    ListaLogin.updateLista(usuariosLogados, ipLogados);
+                }
+            }catch(SQLException e){
+                throw new RuntimeException(e);
+            }
         }
     }
 
