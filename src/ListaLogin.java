@@ -19,6 +19,7 @@ public class ListaLogin extends JFrame {
         setVisible(true);
         loginList.setModel(loginListModel);
 
+
     }
 
     public static void updateLista(List<String> usuarios, List<String> ips) throws SQLException {

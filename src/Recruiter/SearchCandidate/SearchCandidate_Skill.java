@@ -41,7 +41,8 @@ public class SearchCandidate_Skill {
             String experiencia = profile.get("experience").getAsString();
             String id = profile.get("id").getAsString();
             String id_user = profile.get("id_user").getAsString();
-            candidates.add(new Candidate(id_user,skillName,experiencia,id));
+            String name = profile.get("name").getAsString();
+            candidates.add(new Candidate(id_user, skillName, experiencia, id,name));
         }
 
         return candidates;

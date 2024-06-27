@@ -1177,6 +1177,8 @@ public class Server extends Thread {
         String token = requestJson.get("token").getAsString();
         int recruiterId = JsonUtils.JWTValidator.getIdClaim(token);
 
+        String available,searchable;
+
         PreparedStatement st;
         ResultSet rs;
 
@@ -1200,10 +1202,26 @@ public class Server extends Thread {
                     nameSkill = rs2.getString("nameSkill");
                 }
 
+            if(rs.getString("available").equals("0")){
+                available = "NO";
+            }
+            else {
+                available = "YES";
+            }
+
+            if(rs.getString("searchable").equals("0")){
+                searchable = "NO";
+            }
+            else {
+                searchable = "YES";
+            }
+
                 JsonObject data = new JsonObject();
                 data.addProperty("skill",nameSkill);
                 data.addProperty("experience",experience);
                 data.addProperty("id",rs.getString("idJob"));
+                data.addProperty("available",available);
+                data.addProperty("searchable",searchable);
                 JsonObject responseJson = JsonUtils.createResponse("LOOKUP_JOB", "SUCCESS", "");
                 responseJson.add("data",data);
 
@@ -1353,8 +1371,21 @@ public class Server extends Thread {
 
             experiencia = rs.getString("experiencia");
             idJob = rs.getString("idJob");
-            available = rs.getString("available");
-            searchable = rs.getString("searchable");
+
+            if(rs.getString("available").equals("0")){
+                available = "NO";
+            }
+            else {
+                available = "YES";
+            }
+
+            if(rs.getString("searchable").equals("0")){
+                searchable = "NO";
+            }
+            else {
+                searchable = "YES";
+            }
+
 
             var jobObject = new JsonObject();
             jobObject.addProperty("skill", nameSkill);
@@ -1476,7 +1507,7 @@ public class Server extends Thread {
 
         String token = requestJson.get("token").getAsString(); //Pega o token do recruiter
 
-        String nameSkill = "",experiencia,idCandidate;
+        String nameSkill = "",experiencia,idCandidate,nameCandidate;
 
         var candidateArray = new JsonArray(); //Cria a variável da lista de candidatos
 
@@ -1519,22 +1550,28 @@ public class Server extends Thread {
             rs = st.executeQuery();
 
             while (rs.next()) { // enquanto houver um resultado na busca feita
+
                 st = Conexao.getConexao().prepareStatement("SELECT * FROM skilldataset WHERE idSkill = ?");
                 st.setInt(1, rs.getInt("idSkillDataset")); //Pegar o nome da skill
-
                 rs2 = st.executeQuery();
-
                 rs2.next();
                 nameSkill = rs2.getString("nameSkill");
 
                 experiencia = rs.getString("experiencia");
                 idCandidate = rs.getString("idCandidate");
 
+                st = Conexao.getConexao().prepareStatement("SELECT Nome FROM candidate WHERE id = ?");
+                st.setInt(1, Integer.parseInt(idCandidate));
+                rs2 = st.executeQuery();
+                rs2.next();
+                nameCandidate = rs2.getString("Nome");
+
                 var jobObject = new JsonObject();
                 jobObject.addProperty("skill", nameSkill);
                 jobObject.addProperty("experience", experiencia);
                 jobObject.addProperty("id", rs.getInt("idSkillDataset"));
                 jobObject.addProperty("id_user", idCandidate);
+                jobObject.addProperty("name", nameCandidate);
                 candidateArray.add(jobObject); // adicionar no array de candidatos
 
             }
@@ -1574,11 +1611,18 @@ public class Server extends Thread {
                     experiencia = rs.getString("experiencia");
                     idCandidate = rs.getString("idCandidate");
 
+                    st = Conexao.getConexao().prepareStatement("SELECT Nome FROM candidate WHERE id = ?");
+                    st.setInt(1, Integer.parseInt(idCandidate));
+                    rs2 = st.executeQuery();
+                    rs2.next();
+                    nameCandidate = rs2.getString("Nome");
+
                     var jobObject = new JsonObject();
                     jobObject.addProperty("skill", nameSkill);
                     jobObject.addProperty("experience", experiencia);
                     jobObject.addProperty("id", rs.getInt("idSkillDataset"));
                     jobObject.addProperty("id_user", idCandidate);
+                    jobObject.addProperty("name", nameCandidate);
                     candidateArray.add(jobObject);
 
                 }
@@ -1623,11 +1667,18 @@ public class Server extends Thread {
                         experiencia = rs.getString("experiencia");
                         idCandidate = rs.getString("idCandidate");
 
+                        st = Conexao.getConexao().prepareStatement("SELECT Nome FROM candidate WHERE id = ?");
+                        st.setInt(1, Integer.parseInt(idCandidate));
+                        rs2 = st.executeQuery();
+                        rs2.next();
+                        nameCandidate = rs2.getString("Nome");
+
                         var jobObject = new JsonObject();
                         jobObject.addProperty("skill", nameSkill);
                         jobObject.addProperty("experience", experiencia);
                         jobObject.addProperty("id", rs.getInt("idSkillDataset"));
                         jobObject.addProperty("id_user", idCandidate);
+                        jobObject.addProperty("name", nameCandidate);
                         candidateArray.add(jobObject);
 
                     }
@@ -1669,11 +1720,18 @@ public class Server extends Thread {
                         experiencia = rs.getString("experiencia");
                         idCandidate = rs.getString("idCandidate");
 
+                        st = Conexao.getConexao().prepareStatement("SELECT Nome FROM candidate WHERE id = ?");
+                        st.setInt(1, Integer.parseInt(idCandidate));
+                        rs2 = st.executeQuery();
+                        rs2.next();
+                        nameCandidate = rs2.getString("Nome");
+
                         var jobObject = new JsonObject();
                         jobObject.addProperty("skill", nameSkill);
                         jobObject.addProperty("experience", experiencia);
                         jobObject.addProperty("id", rs.getInt("idSkillDataset"));
                         jobObject.addProperty("id_user", idCandidate);
+                        jobObject.addProperty("name", nameCandidate);
                         candidateArray.add(jobObject);
 
                     }
@@ -1698,10 +1756,16 @@ public class Server extends Thread {
                     experiencia = rs.getString("experiencia");
                     idCandidate = rs.getString("idCandidate");
 
+                    st = Conexao.getConexao().prepareStatement("SELECT Nome FROM candidate WHERE id = ?");
+                    st.setInt(1, Integer.parseInt(idCandidate));
+                    rs2 = st.executeQuery();
+                    rs2.next();
+                    nameCandidate = rs2.getString("Nome");
+
 
                     for (int i = 0; i < candidateArray.size(); i++) {
                         JsonObject jsonObject = candidateArray.get(i).getAsJsonObject();
-                        if (jsonObject.get("id").getAsString().equals(idCandidate) && jsonObject.get("experience").getAsString().equals(experiencia)) {
+                        if (jsonObject.get("id_user").getAsString().equals(idCandidate) && jsonObject.get("id").getAsString().equals(rs.getString("idSkillDataset"))) {
                             isPresent = true;
                             break;
                         }
@@ -1714,6 +1778,7 @@ public class Server extends Thread {
                         jobObject.addProperty("experience", experiencia);
                         jobObject.addProperty("id", rs.getInt("idSkillDataset"));
                         jobObject.addProperty("id_user", idCandidate);
+                        jobObject.addProperty("name", nameCandidate);
                         candidateArray.add(jobObject);
                     }
 

@@ -29,13 +29,15 @@ public class SearchJob_Experience {
         JsonArray jobSet = dataResponse.getAsJsonArray("jobset");
         List<Jobs> jobs = new ArrayList<Jobs>();
 
-        for (int i = 0; i < dataResponse.get("jobset_size").getAsInt(); i++) {
-            JsonObject job = jobSet.get(i).getAsJsonObject();
-            String skillName = job.get("skill").getAsString();
-            int experiencia = job.get("experience").getAsInt();
-            int id = job.get("id").getAsInt();
-            String available = job.get("available").getAsString();
-            jobs.add(new Jobs(id,skillName,experiencia,available));
+        if (!jobSet.isEmpty()) {
+            for (int i = 0; i < dataResponse.get("jobset_size").getAsInt(); i++) {
+                JsonObject job = jobSet.get(i).getAsJsonObject();
+                String skillName = job.get("skill").getAsString();
+                int experiencia = job.get("experience").getAsInt();
+                int id = job.get("id").getAsInt();
+                String available = job.get("available").getAsString();
+                jobs.add(new Jobs(id, skillName, experiencia, available));
+            }
         }
 
         return jobs;
